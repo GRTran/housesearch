@@ -1,0 +1,12 @@
+.body-div {
+	background-color: black;
+}
+
+.main-wrapper {
+	height: 100vh;
+}
+
+h1 {
+	color: white;
+	text-align: center;
+}

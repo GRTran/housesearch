@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block base %}
+	<header><title>Home</title></header>
+	<div class="p-3 mb-2 bg-dark text-light">
+		<body>
+			<h1> 
+				{{list.title}}<br>
+			</h1>
+			<h2 class="text-white-50 text-center font-weight-bold">
+
+				Price: {{list.price}}<br>
+				Beds: {{detailed_info.bedrooms}}
+				Baths: {{detailed_info.bathrooms}}<br>
+				Tenure: {{detailed_info.tenure}}
+				Property Type: {{detailed_info.property_type}}<br><br>
+				<a class="btn btn-primary" target="_blank" href={{list.url}}>Original Listing</a><br>
+			</h2>
+			<div class="row">
+			{% for img in image_urls %}
+				<div class="col-md-4">
+					<img src="{{img}}" class="img-fluid" alt="img"> 
+				</div>
+			{% endfor %}
+			</div>
+{% endblock %}

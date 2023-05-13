@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block base %}
+	<header><title>Home</title></header>
+	<div class="p-3 mb-2 bg-dark text-light">
+		<body>
+			<h1> 
+				House Scraper
+			</h1>
+			<p class="text-white-50 text-start">
+				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
+			</p>
+			{% comment %} <a class="{%url 'scrape'%} btn btn-primary my-5">Scrape</a> {% endcomment %}
+
+
+			<p> Para 2 </p>
+			{% comment %} {% comment %} <div class="container-fluid"> {% endcomment %}
+				<div class="row">
+					{% for list in object_list %}
+						<div class="col-md-4">
+							<a target="_blank" href="{{list.url}}">
+								{% comment %} {{ list }} {% endcomment %}
+								{% comment %} Present the model {% endcomment %}
+								<img src="{{list.image_url}}" class="img-fluid" alt="img"> <br>
+								{{list.title}} <br>
+								{{list.price}}
+								{% comment %} City: {{list.city}} <br> {% endcomment %}
+								{% comment %} County: {{ist.county}} <br> {% endcomment %}
+							</a>
+							<br>
+							<div class="row justify-content-center">
+								<div class="col">
+									{% comment %} Make a form to add the like/dislike classification (binary option in model) to the model. When putting in specific geographic location of interest this will complete the preliminary model. {% endcomment %}
+									<a class="btn btn-primary" href="">Like </a>
+								</div>
+								<div class="col">
+									<a class="btn btn-danger">Dislike </a>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</body>
+	</div>
+{% endblock %}

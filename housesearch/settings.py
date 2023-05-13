@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own apps
-    'home'
+    'home',
+    'scraper'
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,8 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'static/templates',
+            BASE_DIR / 'home/templates',
+            BASE_DIR / 'scraper/templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

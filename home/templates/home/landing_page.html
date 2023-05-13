@@ -9,23 +9,10 @@
 			<p class="text-white-50 text-start">
 				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
 			</p>
-			<a class="{%url 'scrape'%} btn btn-primary my-5">Scrape</a>
+			<a href="{% url 'scraper.listings' %}" class="btn btn-primary my-5">Search</a>
 
 
-			<p> Para 2 </p>
-			<div class="container-fluid">
-				<div class="row">
-					{% for list in listings %}
-						<div class="col-md-4">
-							{% comment %} Present the model {% endcomment %}
-								<img src="{{list.image_url}}" class="img-fluid" alt="img"> <br>
-								Title: {{list.title}} <br>
-								City: {{list.city}} <br>
-								County: {{list.county}} <br>
-						</div>
-					{% endfor %}
-				</div>
-			</div>
+			
 		</body>
 	</div>
 {% endblock %}

@@ -1,9 +1,14 @@
+from typing import Any, Dict
 from django.shortcuts import render
-from django.views.generic import ListView, TemplateView, DetailView, UpdateView
+from django import forms
+from django.views.generic import ListView, TemplateView, DetailView, UpdateView, FormView
+from django.views.generic.detail import SingleObjectMixin
 from django.http import HttpResponseNotFound
+from django.urls import reverse
 
 from scraper.models import Listing
 from scraper.web_scrape import rightmove_listings as rightmove
+from scraper.forms import LikedForm
 import locale
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
@@ -53,6 +58,19 @@ class ListingsView(ListView):
 					   .filter(price__gte = min_price)
 		return qs
 
+	def post(self, request, *args, **kwargs):
+		print('here')
+		# ctx = super().get_context_data(**kwargs)
+		# print(ctx)
+		return ListingLiked.as_view()(request)
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['object_list'] = Listing.objects.all()
+		context['form'] = LikedForm # The POST request from the form will now be routed through the form class. This handles the case where the Listview does not have a POST function. GET is still handled through the listview and will call the get_queryset.
+		return context
+
+
 class ListingContainer(TemplateView):
 	'''
 	Extend the template view, it is essentially a manual detail view but allows us to also send the contents in the context of the doc
@@ -80,9 +98,6 @@ class ListingContainer(TemplateView):
 		# Use the web-scrape module for individual webpages in order to get the information required to render them
 		indi_listing = rightmove()
 
-		# https://www.rightmove.co.uk/properties/133299740#/media?channel=RES_BUY
-		# https://rightmove.co.uk/properties/133299740#/ media ?channel=RES_BUY
-
 		tmp_url = item.url.split(sep='?')[0]+'media?'+item.url.split(sep='?')[1]
 		outs, image_urls = indi_listing.listing_detail(item.url)
 
@@ -90,7 +105,20 @@ class ListingContainer(TemplateView):
 		ctx["detailed_info"] = outs
 		return self.render_to_response(ctx)
 	
-# class NotesUpdateView(UpdateView):
-# 	model = Listing
-# 	form_class = ListingForm
-# 	success_url = '/smart/notes'
+	def post(self, request, *args, **kwargs):
+		return ListingLiked.post(request, *args, **kwargs)
+	
+class ListingLiked(FormView):
+	# template_name = 'scraper/listings.html'
+	form_class = LikedForm
+	model = Listing
+
+	def post(self, request, *args, **kwargs):
+		print('here')
+		ctx = super().get_context_data(**kwargs)
+		print(ctx['info'])
+		return ListingsView.get(request, *args, **kwargs)
+	
+	def get_success_url(self):
+		return reverse('scraper/listings.html')
+	

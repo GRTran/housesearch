@@ -15,12 +15,9 @@ class Listing(models.Model):
 	reduced = models.BooleanField(default = False)
 	date_listed = models.DateField(default = timezone.now, null = True)
 	date_added_to_db = models.DateField(default = timezone.now)
-	liked = models.IntegerField(default=0) # 1 for dislike, 2 for like
     
 	def __str__(self):
 		return self.title
-
-
 
 	# Add metadata that is anything that is not a field. This might be more detailed information that we don't need in database
 	class Meta():
@@ -36,6 +33,3 @@ class Liked(models.Model):
 		('D', 'Dislike'))
 	type = models.CharField(max_length=1, choices=FEEDBACK_OPTIONS)
 	user_response = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='user_response')
-
-# class Disliked(Listing):
-# 	pass

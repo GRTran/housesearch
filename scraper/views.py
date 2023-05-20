@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django import forms
 from django.views.generic import ListView, TemplateView, DetailView, UpdateView, FormView
 from django.views.generic.detail import SingleObjectMixin
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.urls import reverse
 
 from scraper.models import Listing
@@ -60,9 +60,8 @@ class ListingsView(ListView):
 
 	def post(self, request, *args, **kwargs):
 		print('here')
-		# ctx = super().get_context_data(**kwargs)
-		# print(ctx)
-		return ListingLiked.as_view()(request)
+		print(request.POST.get("type"))
+		return HttpResponseRedirect(reverse('scraper.listings'))
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -117,7 +116,9 @@ class ListingLiked(FormView):
 		print('here')
 		ctx = super().get_context_data(**kwargs)
 		print(ctx['info'])
-		return ListingsView.get(request, *args, **kwargs)
+		return ListingsView.get()
+	
+	
 	
 	def get_success_url(self):
 		return reverse('scraper/listings.html')

@@ -28,34 +28,11 @@ class ListingsView(ListView):
 		region_id = '5E1296'
 		max_bedrooms = '2'
 		radius = '0.5'
-
-		# Get the listings from rightmove
-		listings = rightmove()
-		listings.search_listings(region_id, max_price, min_price, min_bedrooms, max_bedrooms, radius)
-		df = listings.get_listings()
-
-		# Populate the model with listings, making sure to not add duplicates of listings
-		for index, item in df.iterrows():			
-			try:
-				result = Listing.objects.get(item['id'])
-			except:
-				result = None
-
-			# add or edit the listing if it is required
-			if result == None:
-				# the listing hasn't been recorded on the database, so add it
-			
-				l = Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'], image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'], region_id=item['region_id'])
-				l.save()
-			elif result.price != item['price']:
-				# the listing exists but the price has been changed, so update the listing
-				result.delete()
-				l = Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'], image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'], region_id=item['region_id'])
-				l.save()
 			
 		# Now render the list response based on the search criteria
 		qs = Listing.objects.filter(price__lte = max_price) \
-					   .filter(price__gte = min_price)
+					   		.filter(price__gte = min_price) \
+					   		.filter(region_id = region_id)
 		return qs
 
 	def post(self, request, *args, **kwargs):

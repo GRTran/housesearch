@@ -52,7 +52,7 @@ class HomeView(TemplateView):
                 l = Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'], image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'], region_id=item['region_id'])
                 l.save()
 				
-        return HttpResponseRedirect(reverse('scraper.listings'))
+        return HttpResponseRedirect(reverse('scraper.listings', args=(max_price, min_price, min_bedrooms, region_id, max_bedrooms, radius,)))
 
 # Have a button that runs the scrape from the home \view
 # class CreateHomeView(CreateView):

@@ -32,8 +32,16 @@
 									{% comment %} Make a form to add the like/dislike classification (binary option in model) to the model. When putting in specific geographic location of interest this will complete the preliminary model. {% endcomment %}
 									{% comment %} Create a post response and add stuff to it {% endcomment %}
 									<form action="/scraper/listings/" method='POST'>{% csrf_token %}
-										<button name="Like" value={{list.id}} type="submit" class="btn btn-primary my-5">Like</button>
-										<button name="Dislike" value={{list.id}} type="submit" class="btn btn-primary my-5">Dislike</button>
+										{% if list.liked == 1 %}	
+											<button name="Like" value={{list.id}} type="submit" class="btn-secondary-my-5">Like</button>
+											<button name="Dislike" value={{list.id}} type="submit" class= "btn-success my-5" >Dislike</button>
+										{%elif list.liked == 2%}
+											<button name="Like" value={{list.id}} type="submit" class="btn-success my-5">Like</button>
+											<button name="Dislike" value={{list.id}} type="submit" class= "btn-secondary my-5" >Dislike</button>
+										{%else%}
+											<button name="Like" value={{list.id}} type="submit" class="btn-primary my-5">Like</button>
+											<button name="Dislike" value={{list.id}} type="submit" class= "btn-primary my-5" >Dislike</button>
+										{%endif%}
 									</form>
 								</div>
 							</div>

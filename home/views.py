@@ -28,8 +28,6 @@ class HomeView(TemplateView):
         max_bedrooms = '2'
         radius = '0.5'
 
-        print('running post in home')
-
         # Get the listings from rightmove
         listings = rightmove()
         listings.search_listings(region_id, max_price, min_price, min_bedrooms, max_bedrooms, radius)
@@ -53,7 +51,12 @@ class HomeView(TemplateView):
                 l.save()
 				
         # return HttpResponseRedirect(reverse('scraper.listings', args=(max_price, min_price, min_bedrooms, region_id, max_bedrooms, radius,)))
-        return HttpResponseRedirect(reverse('scraper.listings'))
+        response = HttpResponseRedirect(reverse('scraper.listings',
+            kwargs = {
+                "max_price": max_price, "min_price": min_price, "region_id": region_id,
+                "max_bedrooms": max_bedrooms, "min_bedrooms": min_bedrooms, "radius": radius
+            }))
+        return response
 # Have a button that runs the scrape from the home \view
 # class CreateHomeView(CreateView):
 #     pass

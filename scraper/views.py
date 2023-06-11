@@ -21,13 +21,14 @@ class ListingsView(ListView):
 		'''
 		Overriding the default queryset that returns a list of model objects that will be added to the context. Handles all overheads with adding a list to context using this approach. No need to override get_context_data and the get function
 		'''
+		print(self.kwargs)
 		# Criteria
-		max_price = 600000
-		min_price = 0
-		min_bedrooms = ''
-		region_id = '5E1296'
-		max_bedrooms = '2'
-		radius = '0.5'
+		max_price = self.kwargs["max_price"]
+		min_price = self.kwargs["min_price"]
+		min_bedrooms = self.kwargs["min_bedrooms"]
+		region_id = self.kwargs["region_id"]
+		max_bedrooms = self.kwargs["max_bedrooms"]
+		radius = self.kwargs["radius"]
 			
 		# Now render the list response based on the search criteria
 		qs = Listing.objects.filter(price__lte = max_price) \
@@ -39,17 +40,18 @@ class ListingsView(ListView):
 		if request.POST.get("Like") != None:
 			# Must add a like the the selected item
 			id = request.POST.get("Like")
-			self.__edit_item(id, True)
+			self.__edit_item(id, 2)
 		elif request.POST.get("Dislike") != None:
 			# Must add a dislike to the selected item
 			id = request.POST.get("Dislike")
-			self.__edit_item(id, False)
+			self.__edit_item(id, 1)
 		
 		return HttpResponseRedirect(reverse('scraper.listings'))
 	
 	def __edit_item(self, id, option):
-		# Listing.objects.all().get(id)
-		print(option)
+		item = Listing.objects.get(pk=id)
+		item.liked = option
+		item.save()
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)

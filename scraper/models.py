@@ -15,6 +15,7 @@ class Listing(models.Model):
 	reduced = models.BooleanField(default = False)
 	date_listed = models.DateField(default = timezone.now, null = True)
 	date_added_to_db = models.DateField(default = timezone.now)
+	liked = models.IntegerField(default = 0)
     
 	def __str__(self):
 		return self.title

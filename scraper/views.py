@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django import forms
 from django.views.generic import ListView, TemplateView, DetailView, UpdateView, FormView
 from django.views.generic.detail import SingleObjectMixin
-from django.http import HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect, HttpRequest
 from django.urls import reverse
 
 from scraper.models import Listing
@@ -36,10 +36,21 @@ class ListingsView(ListView):
 		return qs
 
 	def post(self, request, *args, **kwargs):
-		print('here')
-		print(request.POST.get("type"))
+		if request.POST.get("Like") != None:
+			# Must add a like the the selected item
+			id = request.POST.get("Like")
+			self.__edit_item(id, True)
+		elif request.POST.get("Dislike") != None:
+			# Must add a dislike to the selected item
+			id = request.POST.get("Dislike")
+			self.__edit_item(id, False)
+		
 		return HttpResponseRedirect(reverse('scraper.listings'))
 	
+	def __edit_item(self, id, option):
+		# Listing.objects.all().get(id)
+		print(option)
+
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['object_list'] = Listing.objects.all()

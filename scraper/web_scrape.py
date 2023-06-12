@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 from urllib.request import urlopen
 import re
+import requests
 
 class rightmove_listings():
     '''
@@ -13,9 +14,19 @@ class rightmove_listings():
         self.property_listings = pd.DataFrame(columns = ['id', 'title', 'property_type', 'price', 'date_listed', 'reduced', 'bedrooms', 'bathrooms',
                         'tenure', 'description', 'url', 'image_url', 'region_id', 'num_images'])
 
-    def search_listings(self, region_id = '5E1296', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
+    def search_listings(self, postcode = '', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
+        # A query must be made to rightmove to get the location identifier from the postcode that has been provided
+        url = f"https://www.rightmove.co.uk/property-for-sale/search.html?searchLocation={postcode}"
+        with urlopen(url) as response:
+            # print(response)
+            soup = bs(response, "html.parser")
+            # print(soup.find('input', {"name": "locationIdentifier"})['value'])
+            region_id = soup.find('input', {"name": "locationIdentifier"})['value'].split(sep="^")[1]
+            # print(region_id)
+
         # Store the base url for the search results as a lambda function, allowing the cycling through the webpage
-        self.base_url = lambda index: 'https://www.rightmove.co.uk/property-for-sale/find.html?locationIdentifier=REGION%{}&minBedrooms={}&maxBedrooms={}&maxPrice={}&min_price={}&radius={}&index={}&propertyTypes=detached%2Csemi-detached%2Cterraced&includeSSTC=false&mustHave=&dontShow=&furnishTypes=&keywords='.format(region_id, min_bedrooms, max_bedrooms, max_price, min_price, radius, index)
+        self.base_url = lambda index: 'https://www.rightmove.co.uk/property-for-sale/find.html?locationIdentifier=OUTCODE%5E{}&minBedrooms={}&maxBedrooms={}&maxPrice={}&min_price={}&radius={}&index={}&propertyTypes=detached%2Csemi-detached%2Cterraced&includeSSTC=false&mustHave=&dontShow=&furnishTypes=&keywords='.format(region_id, min_bedrooms, max_bedrooms, max_price, min_price, radius, index)
+        print(self.base_url(1))
         self.__number_of_listings()
         self.__listing_links(region_id)
         return
@@ -135,7 +146,7 @@ if __name__ == "__main__":
     max_price = 600000
     min_price = ''
     min_bedrooms = ''
-    region_id = '5E1296'
+    region_id = 'yo1'
     max_bedrooms = '2'
     radius = '0.5'
 

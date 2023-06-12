@@ -25,15 +25,17 @@ class ListingsView(ListView):
 		# Criteria
 		max_price = self.kwargs["max_price"]
 		min_price = self.kwargs["min_price"]
-		min_bedrooms = self.kwargs["min_bedrooms"]
 		region_id = self.kwargs["region_id"]
 		max_bedrooms = self.kwargs["max_bedrooms"]
+		min_bedrooms = self.kwargs["min_bedrooms"]
 		radius = self.kwargs["radius"]
 			
 		# Now render the list response based on the search criteria
 		qs = Listing.objects.filter(price__lte = max_price) \
 					   		.filter(price__gte = min_price) \
-					   		.filter(region_id = region_id)
+					   		.filter(region_id = region_id) 
+							# .filter(min_bedrooms__gte = min_bedrooms ) \
+							# .filter(min_bedrooms__lte = max_bedrooms )
 		return qs
 
 	def post(self, request, *args, **kwargs):

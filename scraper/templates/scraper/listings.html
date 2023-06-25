@@ -1,5 +1,12 @@
 {% extends 'base.html' %}
 {% block base %}
+{% load static %}
+{% csrf_token %}
+<head>
+	{% comment %} Add Jquery as JS functions {% endcomment %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="{% static 'javascript/listings.js' %}" type='text/javascript'></script>
+</head>
 	<header><title>Home</title></header>
 	<div class="p-3 mb-2 bg-dark text-light">
 		<body>
@@ -9,7 +16,11 @@
 			<p class="text-white-50 text-start">
 				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
 			</p>
-			{% comment %} <a class="{%url 'scrape'%} btn btn-primary my-5">Scrape</a> {% endcomment %}
+			<div>
+                <h1> Button </h1>
+                <a class="likebutton" id="like" data-catid="AAA" href="#">Like</a>
+            </div>
+			
 
 
 			<p> Para 2 </p>
@@ -28,21 +39,22 @@
 							</a>
 							<br>
 							<div class="row justify-content-center">
-								<div class="col">
+								<div class="col" >
 									{% comment %} Make a form to add the like/dislike classification (binary option in model) to the model. When putting in specific geographic location of interest this will complete the preliminary model. {% endcomment %}
 									{% comment %} Create a post response and add stuff to it {% endcomment %}
-									<form action="/scraper/listings/" method='POST'>{% csrf_token %}
+									{% comment %} <form method='POST', class="like_dislike_listing">{% csrf_token %} {% endcomment %}
+										 {% comment %} <input type="hidden" id="search_criteria" name="search_criteria" value={{search_criteria}}> {% endcomment %}
 										{% if list.liked == 1 %}	
-											<button name="Like" value={{list.id}} type="submit" class="btn-secondary-my-5">Like</button>
-											<button name="Dislike" value={{list.id}} type="submit" class= "btn-success my-5" >Dislike</button>
+											<button name="Like" value={{list.id}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary my-5">Like</button>
+											<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success my-5" >Dislike</button>
 										{%elif list.liked == 2%}
-											<button name="Like" value={{list.id}} type="submit" class="btn-success my-5">Like</button>
-											<button name="Dislike" value={{list.id}} type="submit" class= "btn-secondary my-5" >Dislike</button>
+											<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-success my-5">Like</button>
+											<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary my-5" >Dislike</button>
 										{%else%}
-											<button name="Like" value={{list.id}} type="submit" class="btn-primary my-5">Like</button>
-											<button name="Dislike" value={{list.id}} type="submit" class= "btn-primary my-5" >Dislike</button>
+											<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-primary my-5">Like</button>
+											<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-primary my-5" >Dislike</button>
 										{%endif%}
-									</form>
+									{% comment %} </form> {% endcomment %}
 								</div>
 							</div>
 						</div>
@@ -52,3 +64,30 @@
 		</body>
 	</div>
 {% endblock %}
+
+{% comment %} $(document).ready(function () { {% endcomment %}
+{% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> {% endcomment %}
+
+{% comment %} <script>
+	$('.like_dislike_listing').on('submit', function(e) {
+    e.preventDefault();
+
+    var $this = $(this);
+    var $button = $this.find('button[type="submit"]');
+    var Like = $this.find('input[name="Like"]').val();
+	var Dislike = $this.find('input[name="Disike"]').val();
+
+    $.ajax({
+        url:'/listing/set_like',
+        data: {
+            Like: Like,
+			Dislike, Dislike
+        },
+        success:function(data){
+	        $('#message').html("<h2>Contact Form Submitted!</h2>")
+            {% comment %} $button.text((data.status === 'Like') ? {% trans "Unfollow"%} : {% trans "Follow"%}); {% endcomment %}
+        {% comment %} }
+    })
+	}); {% endcomment %}
+{% comment %} </script> {% endcomment %}
+{% comment %} }) {% endcomment %} 

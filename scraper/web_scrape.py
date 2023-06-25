@@ -12,7 +12,7 @@ class rightmove_listings():
     def __init__(self):
         # Create a dictionary that contains all listing information to be held within a database for a single listing. This acts as a template for the list of listings
         self.property_listings = pd.DataFrame(columns = ['id', 'title', 'property_type', 'price', 'date_listed', 'reduced', 'bedrooms', 'bathrooms',
-                        'tenure', 'description', 'url', 'image_url', 'region_id', 'num_images'])
+                        'tenure', 'description', 'url', 'image_url', 'region_id', 'postcode', 'num_images'])
 
     def search_listings(self, postcode = '', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
         # A query must be made to rightmove to get the location identifier from the postcode that has been provided
@@ -26,9 +26,8 @@ class rightmove_listings():
 
         # Store the base url for the search results as a lambda function, allowing the cycling through the webpage
         self.base_url = lambda index: 'https://www.rightmove.co.uk/property-for-sale/find.html?locationIdentifier=OUTCODE%5E{}&minBedrooms={}&maxBedrooms={}&maxPrice={}&min_price={}&radius={}&index={}&propertyTypes=detached%2Csemi-detached%2Cterraced&includeSSTC=false&mustHave=&dontShow=&furnishTypes=&keywords='.format(region_id, min_bedrooms, max_bedrooms, max_price, min_price, radius, index)
-        print(self.base_url(1))
         self.__number_of_listings()
-        self.__listing_links(region_id)
+        self.__listing_links(region_id, postcode)
         return
     
     def __number_of_listings(self):
@@ -44,7 +43,7 @@ class rightmove_listings():
             self.nperpage = 24
         return
 
-    def __listing_links(self, region_id):
+    def __listing_links(self, region_id, postcode):
         '''
         Gets each individual listing url and stores it in the dict structure defined within __init__
         '''
@@ -70,6 +69,7 @@ class rightmove_listings():
                         self.property_listings.loc[len(self.property_listings)-1, 'image_url'] = line.img['src']
                         self.property_listings.loc[len(self.property_listings)-1, 'price'] = int(''.join(re.findall(r'\d+', line.find('div', {'class' : 'propertyCard-priceValue'}).string)))
                         self.property_listings.loc[len(self.property_listings)-1, 'region_id'] = region_id
+                        self.property_listings.loc[len(self.property_listings)-1, 'postcode'] = postcode
                         self.property_listings.loc[len(self.property_listings)-1, 'num_images'] = int(line.find('span', {'class' : 'propertyCard-moreInfoNumber'}).string.split('/')[0])
 
                         # <span class="propertyCard-moreInfoNumber">1/20</span>

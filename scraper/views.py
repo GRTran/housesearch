@@ -3,8 +3,10 @@ from django.shortcuts import render
 from django import forms
 from django.views.generic import ListView, TemplateView, DetailView, UpdateView, FormView
 from django.views.generic.detail import SingleObjectMixin
-from django.http import HttpResponseNotFound, HttpResponseRedirect, HttpRequest
+from django.http import HttpResponseNotFound, HttpResponseRedirect, HttpRequest, JsonResponse
 from django.urls import reverse
+from django.core.cache import cache
+from django.views.decorators.csrf import csrf_protect
 
 from scraper.models import Listing
 from scraper.web_scrape import rightmove_listings as rightmove
@@ -25,41 +27,93 @@ class ListingsView(ListView):
 		# Criteria
 		max_price = self.kwargs["max_price"]
 		min_price = self.kwargs["min_price"]
-		region_id = self.kwargs["region_id"]
 		max_bedrooms = self.kwargs["max_bedrooms"]
 		min_bedrooms = self.kwargs["min_bedrooms"]
 		radius = self.kwargs["radius"]
+		postcode = self.kwargs["postcode"]
+
+		# add to context
+		# context = super().get_context_data()
+		# context['search_critera'] = self.kwargs
+		# print(cache.get('search_results', 'expired'))
+		# Get the listings from rightmove
+		
+		# if cache.get('search_results', 'expired'):
+		listings = rightmove()
+		listings.search_listings(postcode, max_price, min_price, min_bedrooms, max_bedrooms, radius)
+		# print(listings.get_listings())
+		df = listings.get_listings()
+
+		print(df)
+		qs = []
+		for index, item in df.iterrows():
+			try:
+				result = Listing.objects.get(item['id'])
+			except:
+				result = None
 			
+			qs += [Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'],
+				image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'],
+				region_id=item['region_id'])]
+			
+			if result != None:
+				qs[-1].liked = result.liked
+
+		# cache.set('search_results', qs)
 		# Now render the list response based on the search criteria
-		qs = Listing.objects.filter(price__lte = max_price) \
-					   		.filter(price__gte = min_price) \
-					   		.filter(region_id = region_id) 
+		# qs = Listing.objects.filter(price__lte = max_price) \
+		# 			   		.filter(price__gte = min_price) \
+		# 			   		.filter(region_id = region_id) 
 							# .filter(min_bedrooms__gte = min_bedrooms ) \
 							# .filter(min_bedrooms__lte = max_bedrooms )
-		return qs
 
-	def post(self, request, *args, **kwargs):
-		if request.POST.get("Like") != None:
-			# Must add a like the the selected item
-			id = request.POST.get("Like")
-			self.__edit_item(id, 2)
-		elif request.POST.get("Dislike") != None:
-			# Must add a dislike to the selected item
-			id = request.POST.get("Dislike")
-			self.__edit_item(id, 1)
-		
-		return HttpResponseRedirect(reverse('scraper.listings'))
-	
-	def __edit_item(self, id, option):
-		item = Listing.objects.get(pk=id)
-		item.liked = option
-		item.save()
+		# for index, item in df.iterrows():			
+        #     try:
+        #         result = Listing.objects.get(item['id'])
+        #     except:
+        #         result = None
+        # 	# add or edit the listing if it is required
+        #     if result == None:
+        # 	    # the listing hasn't been recorded on the database, so add it
+        #         l = Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'], image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'], region_id=item['region_id'])
+        #         l.save()
+        #     elif result.price != item['price']:
+        # 		# the listing exists but the price has been changed, so update the listing
+        #         result.delete()
+        #         l = Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'], image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'], region_id=item['region_id'])
+        #         l.save()
+		print(list(qs))
+		return qs
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['object_list'] = Listing.objects.all()
 		context['form'] = LikedForm # The POST request from the form will now be routed through the form class. This handles the case where the Listview does not have a POST function. GET is still handled through the listview and will call the get_queryset.
 		return context
+
+# Create an AJAX endpoint that will process the like/dislike and add to listings database of liked properties
+@csrf_protect
+def set_like(request):
+	print('FOUND ENDPOINT')
+	print(request.POST.get("id"))
+	print(request.POST.get("like_dislike"))
+
+	id = int(request.POST.get("id"))
+	status = request.POST.get("like_dislike")
+	_edit_item(id, status)
+	# if request.POST.get("Like") != None:
+	# 	# Must add a like the the selected item
+	# 	id = request.POST.get("Like")
+	# 	_edit_item(id, 2)
+	# elif request.POST.get("Dislike") != None:
+	# 	# Must add a dislike to the selected item
+	# 	id = request.POST.get("Dislike")
+	# 	_edit_item(id, 1)
+	return JsonResponse({'' : '<a class="likebutton" id="like" data-catid="AAA" href="#">disLike</a>'})
+
+def _edit_item(id, option):
+	item = Listing.objects.get(pk=id)
+	item.liked = option
+	item.save()
 
 
 class ListingContainer(TemplateView):

@@ -14,7 +14,7 @@ class rightmove_listings():
         self.property_listings = pd.DataFrame(columns = ['id', 'title', 'property_type', 'price', 'date_listed', 'reduced', 'bedrooms', 'bathrooms',
                         'tenure', 'description', 'url', 'image_url', 'region_id', 'postcode', 'num_images'])
 
-    def search_listings(self, postcode = '', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
+    def attach_url(self, postcode = '', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
         # A query must be made to rightmove to get the location identifier from the postcode that has been provided
         url = f"https://www.rightmove.co.uk/property-for-sale/search.html?searchLocation={postcode}"
         with urlopen(url) as response:
@@ -27,7 +27,12 @@ class rightmove_listings():
         # Store the base url for the search results as a lambda function, allowing the cycling through the webpage
         self.base_url = lambda index: 'https://www.rightmove.co.uk/property-for-sale/find.html?locationIdentifier=OUTCODE%5E{}&minBedrooms={}&maxBedrooms={}&maxPrice={}&min_price={}&radius={}&index={}&propertyTypes=detached%2Csemi-detached%2Cterraced&includeSSTC=false&mustHave=&dontShow=&furnishTypes=&keywords='.format(region_id, min_bedrooms, max_bedrooms, max_price, min_price, radius, index)
         self.__number_of_listings()
-        self.__listing_links(region_id, postcode)
+        return
+    
+    def attach_url(self, url):
+        # Set the objects base url
+        self.base_url = lambda index: url
+        self.__number_of_listings()
         return
     
     def __number_of_listings(self):
@@ -43,9 +48,9 @@ class rightmove_listings():
             self.nperpage = 24
         return
 
-    def __listing_links(self, region_id, postcode):
+    def listing_links(self, page_num, region_id = None, postcode = None):
         '''
-        Gets each individual listing url and stores it in the dict structure defined within __init__
+        Searches a particular index of listings depending on the result of the pagination.
         '''
         i = 1
         # num_listings = 23

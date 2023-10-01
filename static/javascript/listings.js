@@ -5,6 +5,7 @@ function status_update(_element){
 		method: 'POST',
 		url:'set_like',
 		headers: { 'X-CSRFToken': csrftoken },
+		// Pass through all data for a given listing
 		data: {
 			id: $(_element).attr("value"),
 			like_dislike: $(_element).text()

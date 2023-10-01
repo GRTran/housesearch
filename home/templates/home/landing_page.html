@@ -10,10 +10,19 @@
 				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
 			</p>
 			<form method='POST'>{% csrf_token %}
-				{{form}} <br>
-				<button type="submit" class="btn btn-primary my-5">Search</button>
+				{{search_form.as_p}} <br>
+				<button type="submit" name="{{search_form.prefix}}" class="btn btn-primary my-5">Search</button>
 			</form> 
-			{% comment %} <a href="{% url 'scraper.listings' %}" class="btn btn-primary my-5">Search</a> {% endcomment %}
+			<h2>
+				URL Search
+			</h2>
+			<p class="text-white-50 text-start">
+				It is also possible to search through
+			</p>
+			<form method='POST'>{% csrf_token %}
+				{{url_form.as_p}} <br>
+				<button type="submit" name="{{url_form.prefix}}" class="btn btn-primary my-5">Search</button>
+			</form> 
 		</body>
 	</div>
 {% endblock %}

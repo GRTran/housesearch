@@ -40,19 +40,16 @@
 							<br>
 							<div class="row justify-content-center">
 								<div class="col" >
-									{% comment %} Make a form to add the like/dislike classification (binary option in model) to the model. When putting in specific geographic location of interest this will complete the preliminary model. {% endcomment %}
-									{% comment %} Create a post response and add stuff to it {% endcomment %}
-									{% comment %} <form method='POST', class="like_dislike_listing">{% csrf_token %} {% endcomment %}
-										 {% comment %} <input type="hidden" id="search_criteria" name="search_criteria" value={{search_criteria}}> {% endcomment %}
+									{% comment %} Form HTML string var, concat data {% endcomment %}
 										{% if list.liked == 1 %}	
-											<button name="Like" value={{list.id}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary my-5">Like</button>
-											<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success my-5" >Dislike</button>
+											<button name="Like" value={{list}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary my-5">Like</button>
+											<button name="Dislike" value={{list}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success my-5" >Dislike</button>
 										{%elif list.liked == 2%}
-											<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-success my-5">Like</button>
-											<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary my-5" >Dislike</button>
+											<button name="Like" value={{list}} type="submit" onclick="status_update( $(this) )" class="Like btn-success my-5">Like</button>
+											<button name="Dislike" value={{list}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary my-5" >Dislike</button>
 										{%else%}
-											<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-primary my-5">Like</button>
-											<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-primary my-5" >Dislike</button>
+											<button name="Like" value={{list}} type="submit" onclick="status_update( $(this) )" class="Like btn-primary my-5">Like</button>
+											<button name="Dislike" value={{list}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-primary my-5" >Dislike</button>
 										{%endif%}
 									{% comment %} </form> {% endcomment %}
 								</div>

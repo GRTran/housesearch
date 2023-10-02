@@ -18,24 +18,24 @@ class HomeView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         # Check which form has been selected
-        if "search_pre" in request.POST:
+        if "search_form_pre" in request.POST:
             # The detailed search form
-            max_price = request.POST["max_price"]
-            min_price = request.POST["min_price"]
-            min_bedrooms = request.POST["max_bedrooms"]
-            max_bedrooms = request.POST["max_bedrooms"]
-            postcode = request.POST["postcode"]
-            radius = request.POST["radius"]
+            max_price = request.POST["search_form_pre-max_price"]
+            min_price = request.POST["search_form_pre-min_price"]
+            min_bedrooms = request.POST["search_form_pre-max_bedrooms"]
+            max_bedrooms = request.POST["search_form_pre-max_bedrooms"]
+            postcode = request.POST["search_form_pre-postcode"]
+            radius = request.POST["search_form_pre-radius"]
             response = HttpResponseRedirect(reverse('scraper.listings',
             kwargs = {
                 "max_price": max_price, "min_price": min_price, "postcode": postcode,
                 "max_bedrooms": max_bedrooms, "min_bedrooms": min_bedrooms, "radius": radius,
                 "flag": "detailed_search",
             }))
-        elif "url_pre" in request.POST:
+        elif "url_form_pre" in request.POST:
             # The url option has been selected with fixed url.
-            response = HttpResponseRedirect(reverse('scraper.listings', 
-                kwargs= {"url": request.POST["urls"], "flag": "urls"}
+            response = HttpResponseRedirect(reverse('scraper.url.listings', 
+                kwargs= {"key": request.POST["url_form_pre-urls"], "flag": "urls"}
                 ))
 				
         

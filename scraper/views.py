@@ -15,27 +15,33 @@ from scraper.forms import LikedForm
 import locale
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
+url_refs = {"South West": 'https://www.rightmove.co.uk/property-for-sale/find.html?minBedrooms=3&propertyTypes=detached%2Csemi-detached%2Cterraced%2Cbungalow&keywords=&sortType=2&viewType=LIST&channel=BUY&maxPrice=550000&radius=0.0&locationIdentifier=USERDEFINEDAREA^{"polylines"%3A"eq|xHpbeAl`%40q~Gz_AgzGey%40geDkRsiDbq%40i|AtiDt|Czm%40p_B|_AkmG`Iwv%40vOcm%40l{AuHjmAbObnEzi%40dnAxeAwEjuDtAjwClLhqE`oEdfCngAi_L|uEllBlzAvwEeSn}Mwt%40dvToPn_MyQb}KubCxlD{pGwnCqeEzKadErt%40_mCzZqsBgoQsfGwfc%40"}&index='}
+
 class ListingsView(ListView):
 	model = Listing
 	context_object_name = 'listing'
 	template_name = 'scraper/listings.html'
 	paginate_by = 10
+	paginate_orphans = 4
 	listings: rightmove
 	search_result: pd.DataFrame
 	
+	def __init__(self):
+		"""Initialise the rightmove object.
+		"""
+		super().__init__()
+		self.listings = rightmove()
+
 	def get_queryset(self):
 		'''
 		Overriding the default queryset that returns a list of model objects that will be added to the context. Handles all overheads with adding a list to context using this approach. No need to override get_context_data and the get function
 		'''
-		# TODO: Make this into a pagination so that we don't need to load 500+ all at once. Will need to alter the search listings
-
-		# Create the rightmove object and search based on criteria
-		self.listings = rightmove()
-
+		
 		# Check the data to see whether the url or criteria has been provided
-		if self.kwargs.get("flags") == "urls":
-			url = self.kwargs.get("url")
-			self.listings.attach_url(url)
+		if self.kwargs.get("flag") == "urls" and not self.listings.attached:
+			# URL not set so this must be the first call
+			url = url_refs.get(self.kwargs.get("key"))
+			self.listings.attach_ref_url(url)
 			postcode = None
 		else:
 			# Criteria
@@ -46,13 +52,21 @@ class ListingsView(ListView):
 			radius = self.kwargs["radius"]
 			postcode = self.kwargs["postcode"]
 			self.listings.attach_url(postcode, max_price, min_price, min_bedrooms, max_bedrooms, radius)
+
+		# Try and get the page number required from the request
+		if self.request.GET.get("page") is not None:
+			page_num = int(self.request.GET.get("page"))
+		else:
+			page_num = 1
+		self.listings.listing_links(page_num)
+
 		# Get the dataframe of listings and data
 		self.search_result = self.listings.get_listings()
 
-		
-		self.listings.listing_links(postcode)
+		# TODO: Get preliminary DF max size, also dynamically store, not deleting previous information to speed up pagination
 
-		# Create a QuerySet (List) of Listing objects
+
+		# Create a QuerySet (List) of Listing objects, make sure to pad the QuerySet so that pagination gets right size.
 		qs = []
 		for _, item in self.search_result.iterrows():
 			# Look for an existing listing in the current database, checking is previously liked.

@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
 import pandas as pd
-from urllib.request import urlopen
+from urllib.request import urlopen, quote
 import re
 import requests
 
@@ -13,6 +13,8 @@ class rightmove_listings():
         # Create a dictionary that contains all listing information to be held within a database for a single listing. This acts as a template for the list of listings
         self.property_listings = pd.DataFrame(columns = ['id', 'title', 'property_type', 'price', 'date_listed', 'reduced', 'bedrooms', 'bathrooms',
                         'tenure', 'description', 'url', 'image_url', 'region_id', 'postcode', 'num_images'])
+        self.counted = set()
+        self.attached = False
 
     def attach_url(self, postcode = '', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
         # A query must be made to rightmove to get the location identifier from the postcode that has been provided
@@ -27,64 +29,67 @@ class rightmove_listings():
         # Store the base url for the search results as a lambda function, allowing the cycling through the webpage
         self.base_url = lambda index: 'https://www.rightmove.co.uk/property-for-sale/find.html?locationIdentifier=OUTCODE%5E{}&minBedrooms={}&maxBedrooms={}&maxPrice={}&min_price={}&radius={}&index={}&propertyTypes=detached%2Csemi-detached%2Cterraced&includeSSTC=false&mustHave=&dontShow=&furnishTypes=&keywords='.format(region_id, min_bedrooms, max_bedrooms, max_price, min_price, radius, index)
         self.__number_of_listings()
+        self.attached = True
         return
     
-    def attach_url(self, url):
+    def attach_ref_url(self, url):
         # Set the objects base url
-        self.base_url = lambda index: url
+        self.base_url = lambda index: url+str(index)
         self.__number_of_listings()
+        self.attached = True
         return
     
     def __number_of_listings(self):
         '''
         Calculates the number of listings and sets the listings per page 
         '''
-        with urlopen(self.base_url(1)) as response:
-            soup = bs(response, 'html.parser')
+        response = requests.get(self.base_url(0))
+        soup = bs(response.content, 'html.parser')
 
-            # number of listings
-            self.nlistings = int(soup.find('span', {'class' : 'searchHeader-resultCount'}).string)
-            # listings per page for rightmove
-            self.nperpage = 24
+        # number of listings
+        self.nlistings = int(soup.find('span', {'class' : 'searchHeader-resultCount'}).string)
+        # listings per page for rightmove
+        self.nperpage = 24
         return
 
     def listing_links(self, page_num, region_id = None, postcode = None):
         '''
         Searches a particular index of listings depending on the result of the pagination.
         '''
-        i = 1
+
         # num_listings = 23
-        counted = set()
-        while i <= self.nlistings:
-            with urlopen(self.base_url(i)) as response:
-                soup = bs(response, 'html.parser')
+        # Using the page number calculate the correct starting number of property to show
+        i = (self.nperpage-1) * (page_num-1)
 
-                # find all properties shown on the webpage
-                texts = soup.findAll('div', {'class' : 'propertyCard-wrapper'})
-                for line in texts:
-                    # Obtain the link to each webpage containing a single listing
-                    link = line.find('a', {'class' : 'propertyCard-link'})['href']
-                    
-                    # Check to see that there is a link and it hasn't already been used
-                    if link != '' and link not in counted:
-                        # self.property_listings.iloc[len(self.property_listings),:] = None
-                        self.property_listings.loc[len(self.property_listings), 'url'] = 'https://rightmove.co.uk' + link
-                        self.property_listings.loc[len(self.property_listings)-1, 'id'] = int(link.split('/')[2][:-1])
-                        self.property_listings.loc[len(self.property_listings)-1, 'title'] = line.address.span.string
-                        self.property_listings.loc[len(self.property_listings)-1, 'image_url'] = line.img['src']
-                        self.property_listings.loc[len(self.property_listings)-1, 'price'] = int(''.join(re.findall(r'\d+', line.find('div', {'class' : 'propertyCard-priceValue'}).string)))
-                        self.property_listings.loc[len(self.property_listings)-1, 'region_id'] = region_id
-                        self.property_listings.loc[len(self.property_listings)-1, 'postcode'] = postcode
-                        self.property_listings.loc[len(self.property_listings)-1, 'num_images'] = int(line.find('span', {'class' : 'propertyCard-moreInfoNumber'}).string.split('/')[0])
+        response = requests.get(self.base_url(i))
+        soup = bs(response.content, 'html.parser')
 
-                        # <span class="propertyCard-moreInfoNumber">1/20</span>
-                        
-                        self.__populate_date_listed(line)
+        # find all properties shown on the webpage
+        texts = soup.findAll('div', {'class' : 'propertyCard-wrapper'})
+        for line in texts:
+            # Obtain the link to each webpage containing a single listing
+            link = line.find('a', {'class' : 'propertyCard-link'})['href']
+            
+            # Check to see that there is a link and it hasn't already been used
+            if link != '' and link not in self.counted:
+                # self.property_listings.iloc[len(self.property_listings),:] = None
+                self.property_listings.loc[len(self.property_listings), 'url'] = 'https://rightmove.co.uk' + link
+                self.property_listings.loc[len(self.property_listings)-1, 'id'] = int(link.split('/')[2][:-1])
+                self.property_listings.loc[len(self.property_listings)-1, 'title'] = line.address.span.string
+                self.property_listings.loc[len(self.property_listings)-1, 'image_url'] = line.img['src']
+                self.property_listings.loc[len(self.property_listings)-1, 'price'] = int(''.join(re.findall(r'\d+', line.find('div', {'class' : 'propertyCard-priceValue'}).string)))
+                self.property_listings.loc[len(self.property_listings)-1, 'region_id'] = region_id
+                self.property_listings.loc[len(self.property_listings)-1, 'postcode'] = postcode
+                self.property_listings.loc[len(self.property_listings)-1, 'num_images'] = int(line.find('span', {'class' : 'propertyCard-moreInfoNumber'}).string.split('/')[0])
 
-                    # Add the link to the set so as to not repeat featured listings
-                    counted.add(link)
-                    # print(self.property_listings)
-            i += self.nperpage-1
+                # <span class="propertyCard-moreInfoNumber">1/20</span>
+                
+                self.__populate_date_listed(line)
+
+            # Add the link to the set so as to not repeat featured listings
+            self.counted.add(link)
+
+
 
             # Set Nans to None 
             self.property_listings['url'=='Nan'] = None

@@ -1,5 +1,23 @@
 .body-div {
-	background-color: black;
+	background-color: white;
+}
+
+/* Button formatting */
+.btn-lg {
+	font-size: 18px;
+	line-height: 1.33;
+	border-radius: 6px;
+	padding: 14px 24px
+}
+.round {
+	border-radius: 24px;
+}
+
+.center {
+	margin: auto;
+	width: 50%;
+	border: 3px solid green;
+	padding: 10px;
 }
 
 .main-wrapper {

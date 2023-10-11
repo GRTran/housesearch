@@ -16,64 +16,55 @@
 			<p class="text-white-50 text-start">
 				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
 			</p>
-			<div>
-                <h1> Button </h1>
-                <a class="likebutton" id="like" data-catid="AAA" href="#">Like</a>
-            </div>
-			
-
-
-			<p> Para 2 </p>
 			{% comment %} {% comment %} <div class="container-fluid"> {% endcomment %}
-				<div class="row">
-					{% for list in object_list %}
-						<div class="col-md-4">
-							<a target="_blank" href="{{list.url}}">
-								{% comment %} {{ list }} {% endcomment %}
-								{% comment %} Present the model {% endcomment %}
-								<img src="{{list.image_url}}" class="img-fluid" alt="img"> <br>
-								{{list.title}} <br>
-								{{list.price}}
-								{% comment %} City: {{list.city}} <br> {% endcomment %}
-								{% comment %} County: {{ist.county}} <br> {% endcomment %}
-							</a>
-							<br>
-							<div class="row justify-content-center">
-								<div class="col" >
-									{% comment %} Form HTML string var, concat data {% endcomment %}
-										{% if list.liked == 1 %}	
-											<button name="Like" value={{list}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary my-5">Like</button>
-											<button name="Dislike" value={{list}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success my-5" >Dislike</button>
-										{%elif list.liked == 2%}
-											<button name="Like" value={{list}} type="submit" onclick="status_update( $(this) )" class="Like btn-success my-5">Like</button>
-											<button name="Dislike" value={{list}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary my-5" >Dislike</button>
-										{%else%}
-											<button name="Like" value={{list}} type="submit" onclick="status_update( $(this) )" class="Like btn-primary my-5">Like</button>
-											<button name="Dislike" value={{list}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-primary my-5" >Dislike</button>
-										{%endif%}
-									{% comment %} </form> {% endcomment %}
-								</div>
+			<div class="row">
+				{% for list in object_list %}
+					<div class="col-md-4 center">
+						<a target="_blank" href="{{list.url}}">
+							{% comment %} {{ list }} {% endcomment %}
+							{% comment %} Present the model {% endcomment %}
+							<img src="{{list.image_url}}" class="img-fluid" alt="img"> <br>
+							{{list.title}} <br>
+							{{list.price}}
+							{% comment %} City: {{list.city}} <br> {% endcomment %}
+							{% comment %} County: {{ist.county}} <br> {% endcomment %}
+						</a>
+						<br>
+						<div class="row">								
+							<div class="col">
+							{% comment %} Form HTML string var, concat data {% endcomment %}
+								{% if list.liked == 1 %}	
+									<button name="Like" value={{list.id}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary btn-lg round my-5">Like</button>
+									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success btn-lg round my-5" >Dislike</button>
+								{%elif list.liked == 2%}
+									<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-success btn-lg round my-5">Like</button>
+									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary btn-lg round my-5" >Dislike</button>
+								{%else%}
+									<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like round btn-primary btn-lg round my-5">Like</button>
+									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike round btn-primary btn-lg round my-5" >Dislike</button>
+								{%endif%}
+								{% comment %} </form> {% endcomment %}
 							</div>
 						</div>
-					{% endfor %}
-					<div class="pagination">
-						<span class="step-links">
-							{% if page_obj.has_previous %}
-								<a href="?page=1">&laquo; first</a>
-								<a href="?page={{ page_obj.previous_page_number }}">previous</a>
-							{% endif %}
-
-							<span class="current">
-								Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-							</span>
-
-							{% if page_obj.has_next %}
-								<a href="?page={{ page_obj.next_page_number }}">next</a>
-								<a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-							{% endif %}
-						</span>
 					</div>
-				</div>
+				{% endfor %}
+			</div>
+			<div class="pagination">
+				<span class="step-links">
+					{% if page_obj.has_previous %}
+						<a href="?page=1">&laquo; first</a>
+						<a href="?page={{ page_obj.previous_page_number }}">previous</a>
+					{% endif %}
+
+					<span class="current">
+						Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+					</span>
+
+					{% if page_obj.has_next %}
+						<a href="?page={{ page_obj.next_page_number }}">next</a>
+						<a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+					{% endif %}
+				</span>
 			</div>
 			{% comment %} {% include 'pagination_nav.html' %} {% endcomment %}
 		</body>

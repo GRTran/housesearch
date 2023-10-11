@@ -59,7 +59,7 @@ class rightmove_listings():
 
         # num_listings = 23
         # Using the page number calculate the correct starting number of property to show
-        i = (self.nperpage-1) * (page_num-1)
+        i = (self.nperpage) * (page_num-1)
 
         response = requests.get(self.base_url(i))
         soup = bs(response.content, 'html.parser')

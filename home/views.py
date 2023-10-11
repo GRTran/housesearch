@@ -2,6 +2,7 @@ from django.views.generic import TemplateView
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .forms import SearchForm, URLForm
+import random
 
 
 class HomeView(TemplateView):
@@ -18,6 +19,7 @@ class HomeView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         # Check which form has been selected
+        hash = random.getrandbits(128)
         if "search_form_pre" in request.POST:
             # The detailed search form
             max_price = request.POST["search_form_pre-max_price"]
@@ -35,7 +37,7 @@ class HomeView(TemplateView):
         elif "url_form_pre" in request.POST:
             # The url option has been selected with fixed url.
             response = HttpResponseRedirect(reverse('scraper.url.listings', 
-                kwargs= {"key": request.POST["url_form_pre-urls"], "flag": "urls"}
+                kwargs= {"key": request.POST["url_form_pre-urls"], "flag": "urls", "hashref": hash}
                 ))
 				
         

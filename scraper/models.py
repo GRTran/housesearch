@@ -34,3 +34,8 @@ class Liked(models.Model):
 		('D', 'Dislike'))
 	type = models.CharField(max_length=1, choices=FEEDBACK_OPTIONS)
 	user_response = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='user_response')
+
+class SearchedListings(models.Model):
+	id = models.BigIntegerField(primary_key=True)
+	page = models.IntegerField()
+	hashref = models.CharField(max_length=255, null = True)

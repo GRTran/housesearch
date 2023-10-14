@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block base %}
 {% load static %}
+{% load humanize %}
 {% csrf_token %}
 <head>
 	{% comment %} Add Jquery as JS functions {% endcomment %}
@@ -20,33 +21,72 @@
 			<div class="row">
 				{% for list in object_list %}
 					<div class="col-md-4 center">
-						<a target="_blank" href="{{list.url}}">
-							{% comment %} {{ list }} {% endcomment %}
-							{% comment %} Present the model {% endcomment %}
-							<img src="{{list.image_url}}" class="img-fluid" alt="img"> <br>
-							{{list.title}} <br>
-							{{list.price}}
-							{% comment %} City: {{list.city}} <br> {% endcomment %}
-							{% comment %} County: {{ist.county}} <br> {% endcomment %}
-						</a>
-						<br>
-						<div class="row">								
+
+						{% comment %} Left side for the house data, right side for the image. {% endcomment %}
+						<div class="row">
+
 							<div class="col">
-							{% comment %} Form HTML string var, concat data {% endcomment %}
-								{% if list.liked == 1 %}	
-									<button name="Like" value={{list.id}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary btn-lg round my-5">Like</button>
-									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success btn-lg round my-5" >Dislike</button>
-								{%elif list.liked == 2%}
-									<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-success btn-lg round my-5">Like</button>
-									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary btn-lg round my-5" >Dislike</button>
-								{%else%}
-									<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like round btn-primary btn-lg round my-5">Like</button>
-									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike round btn-primary btn-lg round my-5" >Dislike</button>
-								{%endif%}
-								{% comment %} </form> {% endcomment %}
+								<p class="text-center">
+									{% comment %} Title for house data.{% endcomment %}
+									<span class="fw-bolder">{{list.title}}</span> <br><br>
+								</p>
+								{% comment %} Split headings and searched results into columns. {% endcomment %}
+								<div class="row"  align="center">
+									<span style="text-align: right" class="align-middle mx-2 my-2 fw-bold col">
+										Guide Price: 
+									</span>
+									<span style="text-align: middle" class="col  my-2 align-middle">
+										£{{list.price|intcomma}} 
+									</span>
+								</div>
+								<div class="row">
+									<span style="text-align: right" class="mx-2 my-2 fw-bold col">
+										No. Beds: 
+									</span>
+									<span class="text-right col">
+										{% comment %} Add number of beds. {% endcomment %}
+										 
+									</span>
+								</div>
+								<div class="row">
+									<span style="text-align: right" class="mx-2 my-2 fw-bold col">
+										No. Baths:
+									</span>
+									<span class="text-right my-2 col">
+										{% comment %} Add number of baths. {% endcomment %}
+									</span>
+								</div>
+								<div class="col">
+									<span class="row mx-2 fw-bold text-decoration-underline">
+										Description:
+									</span>
+									<p class="row mx-5">
+										This is where the description goes.
+									</p>
+								</div>
 							</div>
+
+							{% comment %} Image Href of property, located on right of grid {% endcomment %}
+							<a class="col" target="_blank" href="{{list.url}}">
+								<img src="{{list.image_url}}" class="img-fluid" alt="img">
+							</a>
+						</div>
+						
+						{% comment %} Like/Dislike button feature. {% endcomment %}
+						<div align="center">
+							{% if list.liked == 1 %}
+								<button name="Like" value={{list.id}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary btn-lg round my-5">Like</button>
+								<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success btn-lg round my-5" >Dislike</button>
+							{%elif list.liked == 2%}
+								<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-success btn-lg round my-5">Like</button>
+								<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary btn-lg round my-5" >Dislike</button>
+							{%else%}
+								<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like round btn-primary btn-lg round my-5">Like</button>
+								<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike round btn-primary btn-lg round my-5" >Dislike</button>
+							{%endif%}
 						</div>
 					</div>
+
 				{% endfor %}
 			</div>
 			<div class="pagination">

@@ -81,6 +81,10 @@ class rightmove_listings():
                 self.property_listings.loc[len(self.property_listings)-1, 'region_id'] = region_id
                 self.property_listings.loc[len(self.property_listings)-1, 'postcode'] = postcode
                 self.property_listings.loc[len(self.property_listings)-1, 'num_images'] = int(line.find('span', {'class' : 'propertyCard-moreInfoNumber'}).string.split('/')[0])
+                self.property_listings.loc[len(self.property_listings)-1, 'description'] = line.find("span", {"data-test": "property-description"}).text
+                # Searching for house type, beds and baths
+                prop_info = line.find('div', {'class': "property-information"})
+                # self.property_listings.loc[len(self.property_listings)-1, 'property_type'] = 
 
                 # <span class="propertyCard-moreInfoNumber">1/20</span>
                 

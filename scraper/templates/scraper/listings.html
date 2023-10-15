@@ -9,8 +9,7 @@
 	<script src="{% static 'javascript/listings.js' %}" type='text/javascript'></script>
 </head>
 	<header><title>Home</title></header>
-	<div class="p-3 mb-2 bg-dark text-light">
-		<body>
+		<body class="p-3 mb-2 text-main">
 			<h1> 
 				House Scraper
 			</h1>
@@ -20,7 +19,7 @@
 			{% comment %} {% comment %} <div class="container-fluid"> {% endcomment %}
 			<div class="row">
 				{% for list in object_list %}
-					<div class="col-md-4 center">
+					<div class="col-md-2 border scnd-background">
 
 						{% comment %} Left side for the house data, right side for the image. {% endcomment %}
 						<div class="row">
@@ -68,7 +67,7 @@
 
 							{% comment %} Image Href of property, located on right of grid {% endcomment %}
 							<a class="col" target="_blank" href="{{list.url}}">
-								<img src="{{list.image_url}}" class="img-fluid" alt="img">
+								<img src="{{list.image_url}}" class="img-fluid img-border" alt="img">
 							</a>
 						</div>
 						
@@ -108,7 +107,6 @@
 			</div>
 			{% comment %} {% include 'pagination_nav.html' %} {% endcomment %}
 		</body>
-	</div>
 {% endblock %}
 
 {% comment %} $(document).ready(function () { {% endcomment %}

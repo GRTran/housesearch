@@ -108,7 +108,7 @@ class ListingsView(ListView):
 				# Create new listing object and save
 				self.qs[i] = Listing(id=item['id'], title=item['title'], price=item['price'], url=item['url'],
 					image_url=item['image_url'], date_listed=item['date_listed'], reduced=item['reduced'],
-					region_id=item['region_id'])
+					region_id=item['region_id'], description=item["description"])
 				# Add listing to db
 				self.qs[i].save()
 			count += 1

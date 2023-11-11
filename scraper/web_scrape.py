@@ -14,6 +14,7 @@ class rightmove_listings():
         self.property_listings = pd.DataFrame(columns = ['id', 'title', 'property_type', 'price', 'date_listed', 'reduced', 'bedrooms', 'bathrooms',
                         'tenure', 'description', 'url', 'image_url', 'region_id', 'postcode', 'num_images'])
         self.counted = set()
+        self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
         self.attached = False
 
     def attach_url(self, postcode = '', max_price = '', min_price = '', min_bedrooms = '', max_bedrooms = '', radius = ''):
@@ -43,7 +44,7 @@ class rightmove_listings():
         '''
         Calculates the number of listings and sets the listings per page 
         '''
-        response = requests.get(self.base_url(0))
+        response = requests.get(self.base_url(0), headers=self.headers)
         soup = bs(response.content, 'html.parser')
 
         # number of listings
@@ -61,7 +62,7 @@ class rightmove_listings():
         # Using the page number calculate the correct starting number of property to show
         i = (self.nperpage) * (page_num-1)
 
-        response = requests.get(self.base_url(i))
+        response = requests.get(self.base_url(i), headers=self.headers)
         soup = bs(response.content, 'html.parser')
 
         # find all properties shown on the webpage

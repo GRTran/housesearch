@@ -3,6 +3,7 @@
 }
 .scnd-background {
 	background-color: #785c59;
+	box-shadow: 0 20px 5px rgba(0, 0, 0, 0.2);
 }
 .text-main {
 	color: black;

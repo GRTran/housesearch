@@ -7,6 +7,7 @@ class Listing(models.Model):
 	'''
 	id = models.BigIntegerField(primary_key=True)
 	title = models.CharField(max_length=255)
+	description = models.CharField(max_length=10000)
 	region_id = models.CharField(max_length=255, null = True)
 	price = models.IntegerField()
 	url = models.URLField()

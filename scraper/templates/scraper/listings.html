@@ -17,70 +17,77 @@
 				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
 			</p>
 			{% comment %} {% comment %} <div class="container-fluid"> {% endcomment %}
-			<div class="row">
+			<div class="card-deck row">
 				{% for list in object_list %}
 					<div class="col-md-6">
-						<div class="card scnd-background my-5">
+						<div class="card scnd-background my-1">
+							
 							{% comment %} Left side for the house data, right side for the image. {% endcomment %}
-							<div class="row">
+							<div id="property-full" class="row">
 								{% comment %} Left side house info. {% endcomment %}
-								<div class="col">
+								<div class="col" style="width: 50%">
 										{% comment %} Title for house data.{% endcomment %}
-									<h5 class="card-title text-center">{{list.title}}</h5>
-									{% comment %} Split headings and searched results into columns. {% endcomment %}
-									<div class="row"  align="center">
-										<span style="text-align: right" class="align-middle mx-2 my-2 fw-bold col">
-											Guide Price: 
-										</span>
-										<span style="text-align: middle" class="col  my-2 align-middle">
-											£{{list.price|intcomma}} 
-										</span>
-									</div>
-									<div class="row">
-										<span style="text-align: right" class="mx-2 my-2 fw-bold col">
-											No. Beds: 
-										</span>
-										<span class="text-right col">
-											{% comment %} Add number of beds. {% endcomment %}
-											
-										</span>
-									</div>
-									<div class="row">
-										<span style="text-align: right" class="mx-2 my-2 fw-bold col">
-											No. Baths:
-										</span>
-										<span class="text-right my-2 col">
-											{% comment %} Add number of baths. {% endcomment %}
-										</span>
-									</div>
-									<div class="col">
-										<span class="row mx-2 fw-bold text-decoration-underline">
-											Description:
-										</span>
-										<p class="row mx-5 text-truncate text-wrap" style="width: 300px; height: 100px">
-											{{list.description}}
-										</p>
+									<div class="card-body">
+										<h5 id="property-header" class="card-title text-center" style="height: 20%">{{list.title}}</h5>
+										
+										{% comment %} Split headings and searched results into columns. {% endcomment %}
+										<div id="price" class="row"  style="height: 10%">
+											<span style="text-align: right" class="card-text align-middle mx-2 my-2 fw-bold col">
+												Guide Price: 
+											</span>
+											<span style="text-align: middle" class="col  my-2 align-middle">
+												£{{list.price|intcomma}} 
+											</span>
+										</div>
+										<div id="beds" class="row" style="height: 10%">
+											<span style="text-align: right" class="mx-2 my-2 fw-bold col">
+												No. Beds: 
+											</span>
+											<span class="text-right col">
+												{% comment %} Add number of beds. {% endcomment %}
+												
+											</span>
+										</div>
+										<div id="baths" class="row" style="height: 10%">
+											<span style="text-align: right" class="mx-2 my-2 fw-bold col">
+												No. Baths:
+											</span>
+											<span class="text-right my-2 col">
+												{% comment %} Add number of baths. {% endcomment %}
+											</span>
+										</div>
+										<div id="property-description" class="row">
+											<span class="row mx-2 fw-bold">
+												Description:
+											</span>
+											<p class="row mx-2 text-truncate text-wrap">
+												{{list.description}}
+											</p>
+										</div>
 									</div>
 								</div>
 								{% comment %} Image Href of property, located on right of grid {% endcomment %}
-								<a class="col" target="_blank" href="{{list.url}}">
-									{% comment %} <img class="card-img-top" src="..." alt="Card image cap"> {% endcomment %}
-									<img src="{{list.image_url}}" class="img-fluid img-border" alt="Card image cap">
-								</a>
-							</div>
-							
-							{% comment %} Like/Dislike button feature. {% endcomment %}
-							<div align="center">
-								{% if list.liked == 1 %}
-									<button name="Like" value={{list.id}} type="submit"  onclick="status_update( $(this) )" class="Like btn-secondary btn-lg round my-5">Like</button>
-									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-success btn-lg round my-5" >Dislike</button>
-								{%elif list.liked == 2%}
-									<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like btn-success btn-lg round my-5">Like</button>
-									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike btn-secondary btn-lg round my-5" >Dislike</button>
-								{%else%}
-									<button name="Like" value={{list.id}} type="submit" onclick="status_update( $(this) )" class="Like round btn-primary btn-lg round my-5">Like</button>
-									<button name="Dislike" value={{list.id}} type="submit" onclick="status_update( $(this) )" class= "Dislike round btn-primary btn-lg round my-5" >Dislike</button>
-								{%endif%}
+								<div class="col text-center" style="width: 50%">
+									<div class = "row" >
+										<a id="property-link" target="_blank" href="{{list.url}}">
+											{% comment %} <img class="card-img-top" src="..." alt="Card image cap"> {% endcomment %}
+											<img src="{{list.image_url}}" class="img-fluid img-border" alt="Card image cap">
+										</a>
+									</div>
+									{% comment %} Like/Dislike button feature. {% endcomment %}
+									<div class = "row">
+										{% if list.liked == 1 %}
+											<img name="Like" value={{list.id}} type="image" src="{% static 'images/like.png' %}"  onclick="status_update( $(this) )" class="Like btn-secondary cust_btn">
+											<img name="Dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}" onclick="status_update( $(this) )" class= "Dislike btn-success cust_btn" >
+										{%elif list.liked == 2%}
+											<img name="Like" value={{list.id}} type="image" src="{% static 'images/like.png' %}" onclick="status_update( $(this) )" class="Like btn-success cust_btn">
+											<img name="Dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}" onclick="status_update( $(this) )" class= "Dislike btn-secondary cust_btn" >
+										{%else%}
+											<div class = "col cust-btn-container"><img name="Like" value={{list.id}} type="image" src="{% static 'images/like.png' %}" onclick="status_update( $(this) )" class="btn-primary cust-btn "></div>
+											<div class = "col cust-btn-container"><img name="Dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}" onclick="status_update( $(this) )" class= "cust-btn btn-primary" ></div>
+										{%endif%}
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -94,7 +101,7 @@
 					<span aria-hidden="true">&laquo;</span>
 					<span class="sr-only">Previous</span>
 				</a>
-				</li>
+				</li
 				<li class="page-item"><a class="page-link" href="#">1</a></li>
 				<li class="page-item"><a class="page-link" href="#">2</a></li>
 				<li class="page-item"><a class="page-link" href="#">3</a></li>
@@ -106,51 +113,5 @@
 				</li>
 			</ul>
 			</nav>
-
-			{% comment %} <div class="pagination">
-				<span class="step-links">
-					{% if page_obj.has_previous %}
-						<a href="?page=1">&laquo; first</a>
-						<a href="?page={{ page_obj.previous_page_number }}">previous</a>
-					{% endif %}
-
-					<span class="current">
-						Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-					</span>
-
-					{% if page_obj.has_next %}
-						<a href="?page={{ page_obj.next_page_number }}">next</a>
-						<a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-					{% endif %}
-				</span>
-			</div> {% endcomment %}
-			{% comment %} {% include 'pagination_nav.html' %} {% endcomment %}
 		</body>
 {% endblock %}
-
-{% comment %} $(document).ready(function () { {% endcomment %}
-{% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> {% endcomment %}
-
-{% comment %} <script>
-	$('.like_dislike_listing').on('submit', function(e) {
-    e.preventDefault();
-
-    var $this = $(this);
-    var $button = $this.find('button[type="submit"]');
-    var Like = $this.find('input[name="Like"]').val();
-	var Dislike = $this.find('input[name="Disike"]').val();
-
-    $.ajax({
-        url:'/listing/set_like',
-        data: {
-            Like: Like,
-			Dislike, Dislike
-        },
-        success:function(data){
-	        $('#message').html("<h2>Contact Form Submitted!</h2>")
-            {% comment %} $button.text((data.status === 'Like') ? {% trans "Unfollow"%} : {% trans "Follow"%}); {% endcomment %}
-        {% comment %} }
-    })
-	}); {% endcomment %}
-{% comment %} </script> {% endcomment %}
-{% comment %} }) {% endcomment %} 

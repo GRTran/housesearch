@@ -1,4 +1,7 @@
 {
 	"editor.tabCompletion": "on",
-	"diffEditor.codeLens": true
+	"emmet.triggerExpansionOnTab": true,
+	"html.suggest.html5": true,
+	"html.autoClosingTags": true,
+	"workbench.editor.languageDetection": true,
 }

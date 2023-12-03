@@ -84,7 +84,6 @@ class ListingsView(ListView):
 			# Return the page that has previously been searched
 			self.qs[start:end] = [Listing.objects.get(id=key.id) for key in search_listings]
 
-		https://media.rightmove.co.uk/258k/257711/141013553/257711_Stratton_IMG_12_0001.jpeg
 		return self.qs
 
 	def get_context_data(self, **kwargs):

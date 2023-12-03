@@ -53,6 +53,10 @@
 				{{url_form.as_p}} <br>
 				<button type="submit" name="{{url_form.prefix}}" class="btn btn-primary my-5">Search</button>
 			</form> 
+			<p id="update-text">Update database:</p>
+			<form action="home/refresh_database" method='POSE'>
+				<button type='submit'>UpdateDB</button>
+			</form>
 		</body>
 	</div>
 {% endblock %}

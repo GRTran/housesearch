@@ -7,6 +7,8 @@ from scraper.models import Listing
 from bs4 import BeautifulSoup as bs
 import requests
 import re
+import logging
+import random
 from datetime import datetime, timedelta
 
 url_refs = {"South West": 'https://www.rightmove.co.uk/property-for-sale/find.html?minBedrooms=3&propertyTypes=detached%2Csemi-detached%2Cterraced%2Cbungalow&keywords=&sortType=6&viewType=LIST&channel=BUY&maxPrice=550000&radius=0.0&locationIdentifier=USERDEFINEDAREA^{"polylines"%3A"eq|xHpbeAl`%40q~Gz_AgzGey%40geDkRsiDbq%40i|AtiDt|Czm%40p_B|_AkmG`Iwv%40vOcm%40l{AuHjmAbObnEzi%40dnAxeAwEjuDtAjwClLhqE`oEdfCngAi_L|uEllBlzAvwEeSn}Mwt%40dvToPn_MyQb}KubCxlD{pGwnCqeEzKadErt%40_mCzZqsBgoQsfGwfc%40"}&index='}
@@ -58,10 +60,14 @@ def refresh_database(request):
         we dont double count it.
     """
     # 1) Get the existing entries in the database
-    db = Listing.objects.all().order_by("date_listed", reverse=True)
+    db = Listing.objects.all().order_by("date_listed")
     
     # Sort the database into when they were added to the site.
-    newest = db[0]
+    try:
+        newest = db[-1].date_listed
+    except:
+        # The database must be empty
+        newest = None
     update_database(url_refs["South West"], newest)
     
     # Search rightmove listings by newest
@@ -76,8 +82,9 @@ def update_database(url, date_in_db):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
     # Get the url page
     page = 0
-    npage = 1
-    while page < npage:
+    count = 0
+    nresults = 1
+    while count < nresults:
         # Get the single page response
         response = requests.get(url+str(page), headers=headers)
         # Parse through bs4
@@ -85,72 +92,43 @@ def update_database(url, date_in_db):
 
         # # number of total listings
         if page == 0:
-            npage = int(soup.find('span', {'class' : 'searchHeader-resultCount'}).string)
+            nresults = int(soup.find('span', {'class' : 'searchHeader-resultCount'}).string)
             
         # Get the number of properties on the page
-        properties = len(soup.findAll('div', {'class' : 'l-searchResult'}))
+        properties = soup.findAll('div', {'class' : 'l-searchResult'})
         
         for prop in properties:
             # Check the date
             date_info = prop.find("span", {"class":"propertyCard-branchSummary-addedOrReduced"}).string
             # Split by regex
             add_reduce, date = split(date_info)
-            if date < date_in_db:
-                # Most recent searched
+            if isinstance(date_in_db, datetime) and date < date_in_db:
+                # Most recent searched so return because update of DB is complete
                 return
+            
+            # Try and download the image of the property to the db
+            id = int(link.split('/')[2][:-1])
+            image_url = prop.img['src']
+            img_name = download_image(image_url, id, 1)
             
             # Extract data from the property and add it to database
             link = prop.find('a', {'class' : 'propertyCard-link'})['href']
-            url = 'https://rightmove.co.uk' + link
-            id = int(link.split('/')[2][:-1])
-            title = prop.address.span.string
-            image_url = prop.img['src']
-            price = int(''.join(re.findall(r'\d+', prop.find('div', {'class' : 'propertyCard-priceValue'}).string)))
-            num_images = int(prop.find('span', {'class' : 'propertyCard-moreInfoNumber'}).string.split('/')[0])
-            description = prop.find("span", {"data-test": "property-description"}).text
+            info = {
+                "id": id,
+                "title": prop.address.span.string,
+                "description": prop.find("span", {"data-test": "property-description"}).text,
+                "price": int(''.join(re.findall(r'\d+', prop.find('div', {'class' : 'propertyCard-priceValue'}).string))),
+                "url": 'https://rightmove.co.uk' + link,
+                "image_url": img_name,
+                "num_images": int(prop.find('span', {'class' : 'propertyCard-moreInfoNumber'}).string.split('/')[0]),
+                "reduced": add_reduce,
+                "date_listed": date,
+            }
             
-            # Check the listing db and if not present or change in any data then add it, else skip (should always be not present)
+            check_update_listing(info)
             
-        
+            count += 1
         page += 1
-    
-    # Count the number of cols and extract vector of dates. 
-
-    # num_listings = 23
-    # Using the page number calculate the correct starting number of property to show
-    i = (24) * (nlistings)
-
-    response = requests.get(self.base_url(i), headers=self.headers)
-    soup = bs(response.content, 'html.parser')
-
-    # find all properties shown on the webpage
-    texts = soup.findAll('div', {'class' : 'propertyCard-wrapper'})
-    for line in texts:
-        # Obtain the link to each webpage containing a single listing
-        link = line.find('a', {'class' : 'propertyCard-link'})['href']
-        
-        # Check to see that there is a link and it hasn't already been used
-        if link != '' and link not in self.counted:
-            # self.property_listings.iloc[len(self.property_listings),:] = None
-            
-            # Searching for house type, beds and baths
-            prop_info = line.find('div', {'class': "property-information"})
-            # self.property_listings.loc[len(self.property_listings)-1, 'property_type'] = 
-
-            # <span class="propertyCard-moreInfoNumber">1/20</span>
-            
-            self.__populate_date_listed(line)
-
-        # Add the link to the set so as to not repeat featured listings
-        self.counted.add(link)
-
-
-
-        # Set Nans to None 
-        self.property_listings['url'=='Nan'] = None
-        self.property_listings['image_url'=='Nan'] = None
-        self.property_listings['title'=='Nan'] = None
-        self.property_listings['price'=='Nan'] = None
     return
 
 def split(date_info: str) -> tuple:
@@ -163,7 +141,7 @@ def split(date_info: str) -> tuple:
         tuple: _description_
     """
     # Regex options
-    add_type = {"reduced", "added"}
+    add_type = {"reduced": True, "added": False}
     recent_add = {"today", "yesterday"}
     # Declare outputs
     found1 = None
@@ -171,9 +149,9 @@ def split(date_info: str) -> tuple:
     # Make all lower case
     date_info = date_info.lower()
     # Form regex for type and search
-    for tmp in add_type:
+    for tmp in add_type.keys():
         if re.search(tmp, date_info) is not None:
-            found1 = tmp
+            found1 = add_type[tmp]
     # Form regex for date and search
     match = re.search("today", date_info)
     if match is not None:
@@ -191,4 +169,25 @@ def split(date_info: str) -> tuple:
         return found1, found2
         
     
-    # If the date is today or yesterday then replace with an actual date
+def check_update_listing(entries: dict):
+    obj = Listing.objects.filter(id)
+    if obj is not None:
+        # Delete old version of listing and add the new one
+        obj.delete()
+    # Add the new listing
+    ent = Listing(**entries)
+    ent.save()
+
+def download_image(url, id, img_num) -> bool:
+    """Downloads an image into the filesystem and returns bool for success/failure"""
+    hash = random.getrandbits(128)
+    try:
+        data = requests.get(url).content
+        with open(f"static/images/houses/{id}_{img_num}.jpg", "wb") as img:
+            img.write(data)
+            return f"{id}_{img_num}.jpg"
+    except Exception:
+        logging.WARNING(f"Cannot download image at url: {url}, skipping!")
+        return None
+    
+    

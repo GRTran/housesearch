@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from home.models import URLs
 
 class Listing(models.Model):
 	'''
@@ -17,6 +18,7 @@ class Listing(models.Model):
 	date_listed = models.DateField(default = timezone.now, null = True)
 	date_added_to_db = models.DateField(default = timezone.now)
 	liked = models.IntegerField(default = 0)
+	searches = models.ManyToManyField(URLs)
     
 	def __str__(self):
 		return self.title

@@ -56,19 +56,22 @@ class HomeView(TemplateView):
         return response
 
 def update_search(request):
+    # Reference to the DB entry in URLs
+    ref = request.POST.get('search-urls')
+    
     if request.POST.get("update") == "update":
         # Update the database for the search query and redirect back to homepage
-        refresh_database(request)
-        return HttpResponseRedirect(reverse('/home'))
+        refresh_database(ref)
+        return HttpResponseRedirect(reverse('home'))
     elif request.POST.get("search") == "search":
         # Re-direct with the search reference to listings, which can then query the DB.
-        # search(request)
-        return HttpResponseRedirect(reverse('/home'))
+        return HttpResponseRedirect(reverse('scraper.listings',
+            kwargs = {"ref": ref})) 
     else:
         logging.warning("Cannot associate button with action in url search form.")
-        return HttpResponseRedirect(reverse('/home'))
+        return HttpResponseRedirect(reverse('home'))
     
-def refresh_database(request):
+def refresh_database(ref):
     """Take in a POST request from a button action and refresh the Listings database.
         1) We get the listings database and get the most recent listing. 
         2) We query rightmove according to newest to oldest. 
@@ -85,14 +88,19 @@ def refresh_database(request):
     except:
         # The database must be empty
         newest = None
-    update_database(url_refs["South West"], newest)
     
+    update_database(ref, newest)
     
-def update_database(url, date_in_db):
+def update_database(ref, date_in_db):
     '''
     Searches a particular index of listings depending on the result of the pagination.
     '''
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
+    # Get the base url for the reference by querying url db
+    urls = URLs.objects.filter(title=ref)
+    url_obj = urls[0]
+    url = url_obj.search_url
+    
     # Get the url page
     page = 0
     count = 0
@@ -139,7 +147,7 @@ def update_database(url, date_in_db):
                 "date_listed": date,
             }
             
-            check_update_listing(info)
+            check_update_listing(info, url_obj)
             
             count += 1
         page += 1
@@ -203,7 +211,7 @@ def split(date_info: str) -> tuple:
         return found1, found2
         
     
-def check_update_listing(entries: dict):
+def check_update_listing(entries: dict, url_obj):
     try:
         obj = Listing.objects.get(id=entries["id"])
         # Delete old version of listing and add the new one
@@ -214,6 +222,7 @@ def check_update_listing(entries: dict):
     # Add the new listing
     ent = Listing(**entries)
     ent.save()
+    ent
 
 def download_image(url, id, img_num) -> bool:
     """Downloads an image into the filesystem and returns bool for success/failure"""

@@ -52,9 +52,9 @@
 			{% comment %} Adding form with 2 buttons for update/search feature {% endcomment %}
 			<form id="update-search" action="home/update_search" method='POST'> {% csrf_token %}
 				<label for="search-urls">Choose a URL:</label>
-				<select name=search-urls" id="search-urls">
+				<select name="search-urls" id="search-urls">
 					{% for item in urls %}
-						<option value={{item.title}}>{{item.title}}</option>
+						<option value="{{item.title}}">{{item.title}}</option>
 				{% endfor %}
 				</select>
 				<button name="update" value="update" type='submit'>UpdateDB</button>

@@ -37,54 +37,8 @@ class ListingsView(ListView):
 		'''
 		Overriding the default queryset that returns a list of model objects that will be added to the context. Handles all overheads with adding a list to context using this approach. No need to override get_context_data and the get function
 		'''
-		
-		# Check the data to see whether the url or criteria has been provided
-		if self.kwargs.get("flag") == "urls" and not self.listings.attached:
-			# URL not set so this must be the first call
-			url = url_refs.get(self.kwargs.get("key"))
-			hash = self.kwargs.get("hashref")
-			self.listings.attach_ref_url(url)
-			postcode = None
-		else:
-			# Criteria
-			max_price = self.kwargs["max_price"]
-			min_price = self.kwargs["min_price"]
-			max_bedrooms = self.kwargs["max_bedrooms"]
-			min_bedrooms = self.kwargs["min_bedrooms"]
-			radius = self.kwargs["radius"]
-			postcode = self.kwargs["postcode"]
-			self.listings.attach_url(postcode, max_price, min_price, min_bedrooms, max_bedrooms, radius)
-
-		# Reset the searched listings if hashref doesn't match current search hash
-		if len(SearchedListings.objects.filter(hashref = hash)) == 0:
-			SearchedListings.objects.all().delete()
-		# Create temporary queryset object
-		if self.qs is None:
-			self.qs = [None for _ in range(self.listings.nlistings -1)]
-
-		# Try and get the page number required from the request
-		if self.request.GET.get("page") is not None:
-			page_num = int(self.request.GET.get("page"))
-		else:
-			page_num = 1
-
-		# Getting first and last cntry in the vector of all entries
-		start, end = (page_num-1)*self.listings.nperpage, page_num*self.listings.nperpage
-
-		# Check already scraped data for listings from a page
-		# Check that the hash key in the searched_listings is the same, then same search session.
-		search_listings = SearchedListings.objects.filter(page=page_num)
-
-		if len(search_listings) == 0:
-			# Get the listings
-			self.listings.listing_links(page_num)
-			# Perform the search and populate the qs
-			self._qs_from_search(page_num, hash, start, end)
-		else:
-			# Return the page that has previously been searched
-			self.qs[start:end] = [Listing.objects.get(id=key.id) for key in search_listings]
-
-		return self.qs
+		# Use the reference to filter Listings database into queryset to display
+		return Listing.objects.filter(searches=self.kwargs.get("ref"))
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)

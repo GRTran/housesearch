@@ -4,7 +4,7 @@ class URLs(models.Model):
 	'''
 	Creating ORM model for holding the result of a search of properties
 	'''
-	id = models.BigIntegerField(primary_key=True)
+	id = models.AutoField(primary_key=True)
 	title = models.CharField(max_length=255)
 	search_url = models.URLField()
     

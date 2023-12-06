@@ -49,14 +49,23 @@
 				It is also possible to search through selecting recorded urls that relate to maps drawn in rightmove. <br>
 				It is also possible to add a new map into the database.
 			</p>
+			{% comment %} Adding form with 2 buttons for update/search feature {% endcomment %}
+			<form id="update-search" action="home/update_search" method='POST'> {% csrf_token %}
+				<label for="search-urls">Choose a URL:</label>
+				<select name=search-urls" id="search-urls">
+					{% for item in urls %}
+						<option value={{item.title}}>{{item.title}}</option>
+				{% endfor %}
+				</select>
+				<button name="update" value="update" type='submit'>UpdateDB</button>
+				<button name="search" value="search" type='submit'>Search</button>
+			</form>
+			<p>Add new search to DB:</p>
 			<form method='POST'>{% csrf_token %}
 				{{url_form.as_p}} <br>
-				<button type="submit" name="{{url_form.prefix}}" class="btn btn-primary my-5">Search</button>
+				<button type="submit" name="{{url_form.prefix}}" class="btn btn-primary my-5">Add</button>
 			</form> 
-			<p id="update-text">Update database:</p>
-			<form action="home/refresh_database" method='POSE'>
-				<button type='submit'>UpdateDB</button>
-			</form>
+			
 		</body>
 	</div>
 {% endblock %}

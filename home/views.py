@@ -4,6 +4,7 @@ from django.urls import reverse
 from .forms import SearchForm, URLForm
 import random
 from scraper.models import Listing
+from .models import URLs
 from bs4 import BeautifulSoup as bs
 import requests
 import re
@@ -20,9 +21,13 @@ class HomeView(TemplateView):
     template_name = "home/landing_page.html"
 
     def get(self, request, *args, **kwargs):
+        # Add all eligible urls to queryset, then display in a dropdown menu
+        urls = URLs.objects.all()
+        # Add user forms to context
         context = {
             "search_form": SearchForm(prefix="search_form_pre"),
             "url_form": URLForm(prefix="url_form_pre"),
+            "urls": urls,
         }
         return self.render_to_response(context)
 
@@ -44,12 +49,24 @@ class HomeView(TemplateView):
                 "flag": "detailed_search",
             }))
         elif "url_form_pre" in request.POST:
-            # The url option has been selected with fixed url.
-            response = HttpResponseRedirect(reverse('scraper.url.listings', 
-                kwargs= {"key": request.POST["url_form_pre-urls"], "flag": "urls", "hashref": hash}
-                ))
+            # The url adding feature has been selected, we then return back to homepage
+            add_url(request)
+            response = HttpResponseRedirect(reverse('/home'))
         
         return response
+
+def update_search(request):
+    if request.POST.get("update") == "update":
+        # Update the database for the search query and redirect back to homepage
+        refresh_database(request)
+        return HttpResponseRedirect(reverse('/home'))
+    elif request.POST.get("search") == "search":
+        # Re-direct with the search reference to listings, which can then query the DB.
+        # search(request)
+        return HttpResponseRedirect(reverse('/home'))
+    else:
+        logging.warning("Cannot associate button with action in url search form.")
+        return HttpResponseRedirect(reverse('/home'))
     
 def refresh_database(request):
     """Take in a POST request from a button action and refresh the Listings database.
@@ -70,10 +87,6 @@ def refresh_database(request):
         newest = None
     update_database(url_refs["South West"], newest)
     
-    # Search rightmove listings by newest
-    response = HttpResponseRedirect(reverse('scraper.url.listings', 
-                kwargs= {"key": request.POST["url_form_pre-urls"], "flag": "urls", "hashref": hash}
-                ))
     
 def update_database(url, date_in_db):
     '''
@@ -106,13 +119,14 @@ def update_database(url, date_in_db):
                 # Most recent searched so return because update of DB is complete
                 return
             
+            link = prop.find('a', {'class' : 'propertyCard-link'})['href']
+            
             # Try and download the image of the property to the db
             id = int(link.split('/')[2][:-1])
             image_url = prop.img['src']
             img_name = download_image(image_url, id, 1)
             
             # Extract data from the property and add it to database
-            link = prop.find('a', {'class' : 'propertyCard-link'})['href']
             info = {
                 "id": id,
                 "title": prop.address.span.string,
@@ -130,6 +144,26 @@ def update_database(url, date_in_db):
             count += 1
         page += 1
     return
+
+def add_url(request):
+    """Take in a POST request from a form containing a title and search url.
+    Validation of the form is by making sure url and name have not been previously used.
+
+    Args:
+        request (_type_): _description_
+    """
+    urls = URLs.objects.all()
+    title = request.POST.get("url_form_pre-title")
+    search_url = request.POST.get("url_form_pre-search_url")
+    if len(URLs.objects.filter(title=title)) > 0 or len(URLs.objects.filter(search_url = search_url)) > 0:
+        # The entry has already been added, select another one
+        logging.warning("URL title or search has already been added, not adding again.")
+        pass
+    else:
+        # Add the new URL to the list
+        url = URLs(title=title, search_url=search_url)
+        url.save()
+        
 
 def split(date_info: str) -> tuple:
     """Reads in a string with date added info and whether it is new listing or reduced
@@ -165,15 +199,18 @@ def split(date_info: str) -> tuple:
     
     match = re.search(r'(\d+/\d+/\d+)', date_info)
     if match is not None:
-        found2 = datetime.strptime(match(1), "%d/%m/%Y")
+        found2 = datetime.strptime(match[1], "%d/%m/%Y")
         return found1, found2
         
     
 def check_update_listing(entries: dict):
-    obj = Listing.objects.filter(id)
-    if obj is not None:
+    try:
+        obj = Listing.objects.get(id=entries["id"])
         # Delete old version of listing and add the new one
         obj.delete()
+    except Exception:
+        logging.info("Entry not found, adding new to DB.")
+    
     # Add the new listing
     ent = Listing(**entries)
     ent.save()
@@ -187,7 +224,6 @@ def download_image(url, id, img_num) -> bool:
             img.write(data)
             return f"{id}_{img_num}.jpg"
     except Exception:
-        logging.WARNING(f"Cannot download image at url: {url}, skipping!")
+        logging.warning(f"Cannot download image at url: {url}, skipping!")
         return None
-    
     

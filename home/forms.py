@@ -35,7 +35,5 @@ class URLForm(forms.Form):
     '''
     Form that lists the eligible search URLs.
     '''
-    eligible_urls = [
-        ("South West", "South West")
-    ]
-    urls = forms.ChoiceField(choices = eligible_urls)
+    title = forms.CharField(max_length=255)
+    search_url = forms.URLField()

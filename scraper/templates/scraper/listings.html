@@ -71,7 +71,7 @@
 									<div class = "row" >
 										<a id="property-link" target="_blank" href="{{list.url}}">
 											{% comment %} <img class="card-img-top" src="..." alt="Card image cap"> {% endcomment %}
-											<img src="{{list.image_url}}" class="img-fluid img-border" alt="Card image cap">
+											<img src="{% static 'images/houses/' %}{{list.image_url}}" class="img-fluid img-border" alt="Card image cap">
 										</a>
 									</div>
 									{% comment %} Like/Dislike button feature. {% endcomment %}

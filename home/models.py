@@ -1,6 +1,6 @@
 from django.db import models
 
-class URLs(models.Model):
+class ReferenceURLs(models.Model):
 	'''
 	Creating ORM model for holding the result of a search of properties
 	'''

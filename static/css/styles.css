@@ -70,3 +70,36 @@ h1 {
 	width: 100%;
 	height: 50%;
 }
+
+/* Styles from ChatGPT */
+.container {
+	margin-top: 20px;
+}
+
+.card {
+	border: 1px solid #ddd;
+	transition: transform 0.3s;
+}
+
+.card:hover {
+	transform: scale(1.02);
+}
+
+.card-img-top {
+	width: 100%;
+	height: 200px;
+	object-fit: cover;
+}
+
+.card-body {
+	padding: 15px;
+}
+
+.card-title {
+	margin-bottom: 0.5rem;
+	color: #333;
+}
+
+.card-text {
+	color: #777;
+}

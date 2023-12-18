@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_protect
 import pandas as pd
 
+from home.models import ReferenceURLs
 from scraper.models import Listing, SearchedListings
 from scraper.web_scrape import rightmove_listings as rightmove
 from scraper.forms import LikedForm
@@ -37,8 +38,10 @@ class ListingsView(ListView):
 		'''
 		Overriding the default queryset that returns a list of model objects that will be added to the context. Handles all overheads with adding a list to context using this approach. No need to override get_context_data and the get function
 		'''
+		# Get the URLs model object from DB
+		item = ReferenceURLs.objects.get(title=self.kwargs.get("ref"))
 		# Use the reference to filter Listings database into queryset to display
-		return Listing.objects.filter(searches=self.kwargs.get("ref"))
+		return Listing.objects.filter(referenceurls=item)
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)

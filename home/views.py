@@ -4,13 +4,14 @@ from django.urls import reverse
 from .forms import SearchForm, URLForm
 import random
 from scraper.models import Listing
-from .models import URLs
+from .models import ReferenceURLs
 from bs4 import BeautifulSoup as bs
 import requests
 import re
 import logging
 import random
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
+import datetime
 
 url_refs = {"South West": 'https://www.rightmove.co.uk/property-for-sale/find.html?minBedrooms=3&propertyTypes=detached%2Csemi-detached%2Cterraced%2Cbungalow&keywords=&sortType=6&viewType=LIST&channel=BUY&maxPrice=550000&radius=0.0&locationIdentifier=USERDEFINEDAREA^{"polylines"%3A"eq|xHpbeAl`%40q~Gz_AgzGey%40geDkRsiDbq%40i|AtiDt|Czm%40p_B|_AkmG`Iwv%40vOcm%40l{AuHjmAbObnEzi%40dnAxeAwEjuDtAjwClLhqE`oEdfCngAi_L|uEllBlzAvwEeSn}Mwt%40dvToPn_MyQb}KubCxlD{pGwnCqeEzKadErt%40_mCzZqsBgoQsfGwfc%40"}&index='}
 
@@ -22,7 +23,7 @@ class HomeView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         # Add all eligible urls to queryset, then display in a dropdown menu
-        urls = URLs.objects.all()
+        urls = ReferenceURLs.objects.all()
         # Add user forms to context
         context = {
             "search_form": SearchForm(prefix="search_form_pre"),
@@ -84,7 +85,7 @@ def refresh_database(ref):
     
     # Sort the database into when they were added to the site.
     try:
-        newest = db[-1].date_listed
+        newest = db[len(db)-1].date_listed
     except:
         # The database must be empty
         newest = None
@@ -97,7 +98,7 @@ def update_database(ref, date_in_db):
     '''
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
     # Get the base url for the reference by querying url db
-    urls = URLs.objects.filter(title=ref)
+    urls = ReferenceURLs.objects.filter(title=ref)
     url_obj = urls[0]
     url = url_obj.search_url
     
@@ -123,7 +124,7 @@ def update_database(ref, date_in_db):
             date_info = prop.find("span", {"class":"propertyCard-branchSummary-addedOrReduced"}).string
             # Split by regex
             add_reduce, date = split(date_info)
-            if isinstance(date_in_db, datetime) and date < date_in_db:
+            if isinstance(date_in_db, datetime.date) and date < date_in_db:
                 # Most recent searched so return because update of DB is complete
                 return
             
@@ -160,16 +161,16 @@ def add_url(request):
     Args:
         request (_type_): _description_
     """
-    urls = URLs.objects.all()
+    urls = ReferenceURLs.objects.all()
     title = request.POST.get("url_form_pre-title")
     search_url = request.POST.get("url_form_pre-search_url")
-    if len(URLs.objects.filter(title=title)) > 0 or len(URLs.objects.filter(search_url = search_url)) > 0:
+    if len(ReferenceURLs.objects.filter(title=title)) > 0 or len(ReferenceURLs.objects.filter(search_url = search_url)) > 0:
         # The entry has already been added, select another one
         logging.warning("URL title or search has already been added, not adding again.")
         pass
     else:
         # Add the new URL to the list
-        url = URLs(title=title, search_url=search_url)
+        url = ReferenceURLs(title=title, search_url=search_url)
         url.save()
         
 
@@ -197,32 +198,33 @@ def split(date_info: str) -> tuple:
     # Form regex for date and search
     match = re.search("today", date_info)
     if match is not None:
-        found2 = datetime.now()
+        found2 = datetime.datetime.now().date()
         return found1, found2
     
     match = re.search("yesterday", date_info)
     if match is not None:
-        found2 = datetime.now() - timedelta(1)
+        found2 = datetime.datetime.now().date() - datetime.timedelta(1)
         return found1, found2
     
     match = re.search(r'(\d+/\d+/\d+)', date_info)
     if match is not None:
-        found2 = datetime.strptime(match[1], "%d/%m/%Y")
+        found2 = datetime.datetime.strptime(match[1], "%d/%m/%Y").date()
         return found1, found2
         
     
 def check_update_listing(entries: dict, url_obj):
-    try:
-        obj = Listing.objects.get(id=entries["id"])
-        # Delete old version of listing and add the new one
-        obj.delete()
-    except Exception:
-        logging.info("Entry not found, adding new to DB.")
-    
-    # Add the new listing
+    """_summary_
+
+    Args:
+        entries (dict): _description_
+        url_obj (URL): URL model object, which indicates that the property came from a specific search. 
+    """
+    # obj = Listing.objects.get(id=entries["id"])
+    # if obj    
+    # Add the new listing or update an old listing if there has been a change
     ent = Listing(**entries)
     ent.save()
-    ent
+    ent.referenceurls.add(url_obj)
 
 def download_image(url, id, img_num) -> bool:
     """Downloads an image into the filesystem and returns bool for success/failure"""

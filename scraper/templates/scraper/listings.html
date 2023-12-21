@@ -6,7 +6,7 @@
 <head>
 	{% comment %} Add Jquery as JS functions {% endcomment %}
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	<script src="{% static 'javascript/listings.js' %}" type='text/javascript'></script>
+	<script src="{% static 'javascript/listings.js' %}"></script>
 </head>
 	<header><title>Home</title></header>
 		<body class="p-3 mb-2 text-main">
@@ -17,76 +17,39 @@
 				Here, information about all houses currently for sale in a local area by local estate agents, is accumulated into a single easy to read webpage. This will allow us to see which houses are of interest to us. A like/dislike feature is added which will then be used to try and find other houses that we think we will like.
 			</p>
 			{% comment %} {% comment %} <div class="container-fluid"> {% endcomment %}
-			<div class="card-deck row">
+			<div class="row row-cols-1 row-cols-lg-3 g-4">
 				{% for list in object_list %}
-					<div class="col-md-6">
-						<div class="card scnd-background my-1">
-							
-							{% comment %} Left side for the house data, right side for the image. {% endcomment %}
-							<div id="property-full" class="row">
-								{% comment %} Left side house info. {% endcomment %}
-								<div class="col" style="width: 50%">
-										{% comment %} Title for house data.{% endcomment %}
-									<div class="card-body">
-										<h5 id="property-header" class="card-title text-center" style="height: 20%">{{list.title}}</h5>
-										
-										{% comment %} Split headings and searched results into columns. {% endcomment %}
-										<div id="price" class="row"  style="height: 10%">
-											<span style="text-align: right" class="card-text align-middle mx-2 my-2 fw-bold col">
-												Guide Price: 
-											</span>
-											<span style="text-align: middle" class="col  my-2 align-middle">
-												£{{list.price|intcomma}} 
-											</span>
-										</div>
-										<div id="beds" class="row" style="height: 10%">
-											<span style="text-align: right" class="mx-2 my-2 fw-bold col">
-												No. Beds: 
-											</span>
-											<span class="text-right col">
-												{% comment %} Add number of beds. {% endcomment %}
-												
-											</span>
-										</div>
-										<div id="baths" class="row" style="height: 10%">
-											<span style="text-align: right" class="mx-2 my-2 fw-bold col">
-												No. Baths:
-											</span>
-											<span class="text-right my-2 col">
-												{% comment %} Add number of baths. {% endcomment %}
-											</span>
-										</div>
-										<div id="property-description" class="row">
-											<span class="row mx-2 fw-bold">
-												Description:
-											</span>
-											<p class="row mx-2 text-truncate text-wrap">
-												{{list.description}}
-											</p>
-										</div>
-									</div>
-								</div>
-								{% comment %} Image Href of property, located on right of grid {% endcomment %}
-								<div class="col text-center" style="width: 50%">
-									<div class = "row" >
-										<a id="property-link" target="_blank" href="{{list.url}}">
-											{% comment %} <img class="card-img-top" src="..." alt="Card image cap"> {% endcomment %}
-											<img src="{% static 'images/houses/' %}{{list.image_url}}" class="img-fluid img-border" alt="Card image cap">
-										</a>
-									</div>
-									{% comment %} Like/Dislike button feature. {% endcomment %}
-									<div class = "row">
-										{% if list.liked == 1 %}
-											<img name="Like" value={{list.id}} type="image" src="{% static 'images/like.png' %}"  onclick="status_update( $(this) )" class="Like btn-secondary cust_btn">
-											<img name="Dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}" onclick="status_update( $(this) )" class= "Dislike btn-success cust_btn" >
-										{%elif list.liked == 2%}
-											<img name="Like" value={{list.id}} type="image" src="{% static 'images/like.png' %}" onclick="status_update( $(this) )" class="Like btn-success cust_btn">
-											<img name="Dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}" onclick="status_update( $(this) )" class= "Dislike btn-secondary cust_btn" >
-										{%else%}
-											<div class = "col cust-btn-container"><img name="Like" value={{list.id}} type="image" src="{% static 'images/like.png' %}" onclick="status_update( $(this) )" class="btn-primary cust-btn "></div>
-											<div class = "col cust-btn-container"><img name="Dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}" onclick="status_update( $(this) )" class= "cust-btn btn-primary" ></div>
-										{%endif%}
-									</div>
+					<div class="col">
+						<div class="card">
+							<h5 id="property-header" class="card-title">{{list.title}}</h5>
+
+							{% comment %} Image Href of property, located on right of grid {% endcomment %}
+							<a id="property-link" target="_blank" href="{{list.url}}">
+								{% comment %} <img class="card-img-top" src="..." alt="Card image cap"> {% endcomment %}
+								<img src="{% static 'images/houses/' %}{{list.image_url}}" class="img-fluid card-img-top" alt="Card image cap">
+							</a>
+
+							<div class="card-body">
+								<span id="price" class="card-text fw-bold ">
+									Guide Price: 
+								</span>
+								<span  class="card-text">
+									£{{list.price|intcomma}} 
+								</span>
+								{% comment %} Like/Dislike button feature. {% endcomment %}
+								<div class = "button-section">
+									{% if list.liked == 1 %}
+										{% comment %} House listing disliked {% endcomment %}
+										<img id="{{list.id}}_like" name="like" value={{list.id}} type="image" src="{% static 'images/like.png' %}"   class="jbtn btn-secondary">
+										<img id="{{list.id}}_dislike" name="dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}"  class= "jbtn btn-danger" >
+									{%elif list.liked == 2%}
+										{% comment %} House listing liked {% endcomment %}
+										<img id="{{list.id}}_like"  name="like" value={{list.id}} type="image" src="{% static 'images/like.png' %}"  class="jbtn btn-success">
+										<img id="{{list.id}}_dislike" name="dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}"  class= "jbtn btn-secondary" >
+									{%else%}
+										<img id="{{ list.id}}_like"  name="like" value={{list.id}} type="image" src="{% static 'images/like.png' %}"  class="jbtn btn-primary  ">
+										<img id="{{list.id}}_dislike" name="dislike" value={{list.id}} type="image" src="{% static 'images/dislike.png' %}"  class= "jbtn btn-primary" >
+									{%endif%}
 								</div>
 							</div>
 						</div>

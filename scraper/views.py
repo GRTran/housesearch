@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_protect
 import pandas as pd
+import json
 
 from home.models import ReferenceURLs
 from scraper.models import Listing, SearchedListings
@@ -82,40 +83,28 @@ class ListingsView(ListView):
 # Create an AJAX endpoint that will process the like/dislike and add to listings database of liked properties
 @csrf_protect
 def set_like(request):
-	print('FOUND ENDPOINT')
-	# fields = Listing._meta.get_fields()
-	# for field in fields:
-	# 	print(field.attname)
-	print(request.POST.get("id"))
-	print(request.POST.get("like_dislike"))
-
-	id = int(request.POST.get("id"))
-	if request.POST.get("like_dislike") == "Like":
-		status = 2
-	elif request.POST.get("like_dislike") == "Dislike":
-		status = 1
-	else:
-		status = 0
-	_edit_item(id, status)
-	return JsonResponse({'result' : 'success'})
+	# Get the like/dislike option from fetch request
+	try:
+		body = json.loads(request.body)
+		option = body.get("option")
+		id = int(body.get("id"))
+		status_mapping = {"dislike": 1, "like": 2}
+		status = status_mapping.get(option)
+		if status is None:
+			status = 0
+		_edit_item(id, status)
+		return JsonResponse({'result' : 'success'})
+	except:
+		return JsonResponse({'result' : 'failure'})
 
 def _edit_item(id, status):
 	try:
 		# item exists so update the DB.
 		item = Listing.objects.get(pk=id)
 		item.liked = status
+		item.save()
 	except:
-		# Item does not exist so add it to DB.
-		item = Listing(
-						id=item['id'], title=item['title'], price=item['price'], 
-						url=item['url'], image_url=item['image_url'], date_listed=item['date_listed'],
-						reduced=item['reduced'], region_id=item['region_id'], 
-					)
-	
-	# Get the detailed listing information
-
-	item.save()
-
+		pass
 
 class ListingContainer(TemplateView):
 	'''
